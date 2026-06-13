@@ -2093,7 +2093,7 @@
   // can replace them cleanly instead of stacking the auth modal on top.
   const MENU_OVERLAYS = [
     'start-screen', 'mode-screen', 'lb-screen', 'auth-screen',
-    'gameover-screen', 'victory-screen',
+    'gameover-screen', 'victory-screen', 'pause-screen',
   ];
   let authReturnTo = 'start-screen'; // where auth-close / successful login lands
   function navigateTo(overlayId) {
@@ -2158,7 +2158,35 @@
     navigateTo(null);
     startSurvival();
   });
+  // When player exits a Survival run with a real score, offer to submit it
+  // before quitting. Reuses the gameover panel for consistency.
+  let exitingFromPause = false;
+
+  function exitToMenu() {
+    // Story scores are cumulative + only meaningful after completing the campaign,
+    // and a scoreless Survival run has nothing worth saving — both just reload.
+    if (state.campaign || state.score === 0) {
+      location.reload();
+      return;
+    }
+    exitingFromPause = true;
+    state.mode = 'gameover';
+    document.querySelector('#gameover-screen h1').textContent = 'Run Ended';
+    document.getElementById('final-stats').textContent =
+      `Wave ${state.wave} — Score ${state.score}`;
+    document.getElementById('best-line').textContent = saveBest();
+    document.getElementById('restart-btn').textContent = 'EXIT TO MENU';
+    submittedThisRun = false;
+    prepareSubmitRow('restart-btn');
+    track('run_end', {
+      mode: 'survival', score: state.score, wave: state.wave,
+      duration_s: Math.round((Date.now() - runStartedAt) / 1000),
+    });
+    navigateTo('gameover-screen');
+  }
+
   document.getElementById('restart-btn').addEventListener('click', () => {
+    if (exitingFromPause) { location.reload(); return; }
     document.getElementById('gameover-screen').classList.add('hidden');
     initAudio();
     if (state.campaign) retryAct();
@@ -2166,7 +2194,7 @@
   });
   document.getElementById('menu-btn').addEventListener('click', () => location.reload());
   document.getElementById('resume-btn').addEventListener('click', togglePause);
-  document.getElementById('exit-btn').addEventListener('click', () => location.reload());
+  document.getElementById('exit-btn').addEventListener('click', exitToMenu);
 
   // Audio toggles in the pause menu
   document.getElementById('opt-music').addEventListener('change', (e) => {
