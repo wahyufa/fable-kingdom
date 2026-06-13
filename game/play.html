@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fable Kingdom — The Stolen Banner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-wrap">
+    <canvas id="game" width="1280" height="768"></canvas>
+
+    <!-- Start screen -->
+    <div id="start-screen" class="overlay">
+      <div class="panel">
+        <h1>Fable Kingdom</h1>
+        <p class="subtitle">The Stolen Banner</p>
+        <p class="controls">
+          <span><b>WASD / Arrows</b> — move</span>
+          <span><b>Space / Click</b> — attack</span>
+          <span><b>ESC / P</b> — pause</span>
+          <span><b>M</b> — mute all</span>
+        </p>
+        <p class="best" id="start-best"></p>
+        <div class="btn-stack">
+          <button id="play-btn" class="btn btn-stack-item btn-primary">PLAY</button>
+          <button id="lb-btn" class="btn btn-stack-item btn-secondary hidden">LEADERBOARD</button>
+          <button id="auth-btn" class="btn btn-stack-item btn-secondary hidden">LOGIN</button>
+        </div>
+        <p class="account-line" id="account-line"></p>
+      </div>
+    </div>
+
+    <!-- Mode picker (shown after clicking PLAY) -->
+    <div id="mode-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Choose Your Path</h1>
+        <div class="mode-list">
+          <button id="story-btn" class="mode-card">
+            <span class="mode-name">STORY</span>
+            <span class="mode-desc">A six-act tale. Chase Captain Redmane across the isles, topple his castle, and take the King's Banner home.</span>
+          </button>
+          <button id="survival-btn" class="mode-card mode-card-red">
+            <span class="mode-name">SURVIVAL</span>
+            <span class="mode-desc">Endless waves of escalating chaos. Beat your best score and climb the leaderboard.</span>
+          </button>
+        </div>
+        <button id="mode-back" class="btn btn-small btn-ghost-link">BACK</button>
+      </div>
+    </div>
+
+    <!-- Wallet connect (required only for leaderboard entry) -->
+    <div id="auth-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Connect Wallet</h1>
+        <p class="subtitle">Sign in with Solana to enter the leaderboard.<br />Playing the game never requires a wallet.</p>
+        <div class="auth-form">
+          <input id="auth-name" type="text" maxlength="16" placeholder="DISPLAY NAME (OPTIONAL)" autocomplete="off" />
+          <p class="auth-status" id="auth-status"></p>
+          <div class="btn-row">
+            <button id="connect-btn" class="btn btn-small btn-primary">CONNECT WALLET</button>
+          </div>
+          <button id="auth-close" class="btn btn-small btn-ghost-link">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="lb-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Leaderboard</h1>
+        <div class="btn-row lb-tabs">
+          <button id="lb-tab-survival" class="btn btn-small active">SURVIVAL</button>
+          <button id="lb-tab-campaign" class="btn btn-small btn-red">STORY</button>
+        </div>
+        <ol id="lb-list" class="lb-list"></ol>
+        <button id="lb-close" class="btn btn-small">CLOSE</button>
+      </div>
+    </div>
+
+    <!-- Game over screen -->
+    <div id="gameover-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Defeated!</h1>
+        <p class="subtitle" id="final-stats"></p>
+        <p class="best" id="best-line"></p>
+        <div class="submit-row hidden" id="submit-row">
+          <input id="player-name" type="text" maxlength="16" placeholder="YOUR NAME" autocomplete="off" />
+          <button id="submit-btn" class="btn btn-small">SUBMIT SCORE</button>
+          <button id="submit-login-btn" class="btn btn-small hidden">LOGIN TO SUBMIT</button>
+        </div>
+        <button id="restart-btn" class="btn">PLAY AGAIN</button>
+      </div>
+    </div>
+
+    <!-- Victory screen -->
+    <div id="victory-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Victory!</h1>
+        <p class="subtitle">The Banner is home. Bluehaven rises again.</p>
+        <p class="subtitle" id="victory-stats"></p>
+        <p class="best" id="victory-best"></p>
+        <button id="menu-btn" class="btn">MAIN MENU</button>
+      </div>
+    </div>
+
+    <!-- Upgrade picker between waves -->
+    <div id="upgrade-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Wave Cleared!</h1>
+        <p class="subtitle">Choose an upgrade</p>
+        <p class="upgrade-stats" id="upgrade-stats"></p>
+        <div class="upgrade-row">
+          <button id="up-0" class="btn upgrade-btn"><span class="up-name"></span><span class="up-desc"></span></button>
+          <button id="up-1" class="btn upgrade-btn"><span class="up-name"></span><span class="up-desc"></span></button>
+          <button id="up-2" class="btn upgrade-btn"><span class="up-name"></span><span class="up-desc"></span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pause menu -->
+    <div id="pause-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Paused</h1>
+        <div class="stats-grid" id="pause-stats"></div>
+        <div class="audio-opts">
+          <label><input type="checkbox" id="opt-music" /> MUSIC</label>
+          <label><input type="checkbox" id="opt-sfx" /> SOUND FX</label>
+          <label><input type="checkbox" id="opt-mute" /> MUTE ALL</label>
+        </div>
+        <p class="controls">
+          <span><b>WASD / Arrows</b> — move</span>
+          <span><b>Space / Click</b> — attack</span>
+          <span><b>ESC / P</b> — pause</span>
+          <span><b>M</b> — mute all</span>
+        </p>
+        <div class="btn-row">
+          <button id="resume-btn" class="btn">RESUME</button>
+          <button id="exit-btn" class="btn btn-red">EXIT TO MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cinematic act-transition banner -->
+    <div id="act-banner" class="banner-wrap hidden">
+      <div class="banner-content">
+        <p class="banner-eyebrow"></p>
+        <h2 class="banner-title"></h2>
+        <p class="banner-sub"></p>
+      </div>
+    </div>
+
+    <!-- Story dialog -->
+    <div id="dialog-screen" class="dialog-wrap hidden">
+      <div class="dialog-box" id="dialog-box">
+        <img id="dlg-avatar" src="" alt="" />
+        <div class="dlg-body">
+          <p id="dlg-name"></p>
+          <p id="dlg-text"></p>
+          <p class="dlg-hint">SPACE / CLICK &#9656;</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="campaign.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

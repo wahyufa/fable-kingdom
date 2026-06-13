@@ -1,0 +1,53 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.cursor/
+.idea/
+
+# Claude Code session config (personal)
+.claude/
+
+# Node / tool caches
+node_modules/
+.wrangler/
+
+# Cloudflare Pages deploy artifact (rebuilt on every deploy)
+/dist/
+
+# Original Tiny Swords asset packs — kept locally for re-derivation, not in repo.
+# Final game art lives in game/assets/, which IS tracked.
+/Buildings/
+/Particle FX/
+/Terrain/
+/UI Elements/
+/Units/
+/assetsv2/
+/landing/
+/music/
+
+# Test/debug screenshots produced by agent-browser
+/prod_*.png
+/v_*.png
+/t_*.png
+/m_*.png
+/f_*.png
+/g_*.png
+/a_*.png
+/n_*.png
+/p_*.png
+/c_*.png
+/l_*.png
+/bug_*.png
+game/prod_*.png
+game/v_*.png
+game/t_*.png
+game/m_*.png
+game/f_*.png
+game/g_*.png
+game/a_*.png
+game/n_*.png
+game/p_*.png
+game/c_*.png
+game/l_*.png
+game/bug_*.png
