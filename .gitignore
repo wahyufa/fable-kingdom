@@ -51,3 +51,7 @@ game/p_*.png
 game/c_*.png
 game/l_*.png
 game/bug_*.png
+
+# Marketing assets (regenerated from video/ working files)
+/fable-kingdom-trailer*.mp4
+/video/

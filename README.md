@@ -12,7 +12,7 @@ Built on the Tiny Swords free asset pack by Pixel Frog. Vanilla HTML/CSS/JS — 
 | [`game/`](game/) | Game source — landing page, game canvas, audio, art. Deployed as-is to Cloudflare Pages. |
 | [`supabase/functions/solana-auth/`](supabase/functions/solana-auth/) | Edge Function for Solana wallet sign-in (verifies signature, mints Supabase JWT). |
 
-Detailed engineering notes, deploy guides, and the running task log live in [`game/docs/`](game/docs/).
+Detailed engineering notes, deploy guides, and the running task log live in [`docs/`](docs/).
 
 ## Modes
 
@@ -30,7 +30,7 @@ Detailed engineering notes, deploy guides, and the running task log live in [`ga
 
 Production is on Cloudflare Pages, root directory `game/`, no build step. Pushes to `main` redeploy automatically.
 
-Supabase Edge Function deploys via the Supabase dashboard or `supabase functions deploy solana-auth --no-verify-jwt` (see [game/docs/wallet-auth-setup.md](game/docs/wallet-auth-setup.md)).
+Supabase Edge Function deploys via the Supabase dashboard or `supabase functions deploy solana-auth --no-verify-jwt` (see [docs/wallet-auth-setup.md](docs/wallet-auth-setup.md)).
 
 ## Credits
 

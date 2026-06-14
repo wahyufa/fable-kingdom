@@ -3,7 +3,7 @@
  * Fill in your Supabase project credentials to enable the online leaderboard.
  * Leave both empty and the game runs fully offline (leaderboard UI hidden).
  *
- * Setup guide: docs/leaderboard-setup.md
+ * Setup guide: ../../docs/leaderboard-setup.md
  * The anon key is safe to expose in client code — table access is limited
  * by Row Level Security policies (insert + read only).
  */
