@@ -195,11 +195,37 @@ canvas {
 
 .mode-card-red { background: var(--color-red); }
 
-.mode-card:hover { filter: brightness(1.1); }
+.mode-card:not(:disabled):hover { filter: brightness(1.1); }
 
-.mode-card:active {
+.mode-card:not(:disabled):active {
   transform: translateY(6px);
   box-shadow: 0 0 0 var(--color-wood-dark);
+}
+
+/* Locked "coming soon" mode card */
+.mode-card-soon {
+  position: relative;
+  background: #8a8378;
+  cursor: not-allowed;
+  filter: saturate(0.6);
+  opacity: 0.85;
+}
+
+.mode-card-soon .mode-desc { color: rgba(255, 255, 255, 0.85); }
+
+.mode-soon-badge {
+  position: absolute;
+  top: -10px;
+  right: -8px;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--color-wood-dark);
+  background: var(--color-gold);
+  border: 3px solid var(--color-wood-dark);
+  border-radius: 8px;
+  padding: 5px 10px;
+  transform: rotate(6deg);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
 }
 
 .mode-card .mode-name {
