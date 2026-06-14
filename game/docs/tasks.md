@@ -78,7 +78,7 @@
 - [x] Pause-menu audio settings: MUSIC and SOUND FX checkboxes + MUTE ALL; M hotkey = master mute, synced with the checkbox
 - [x] Settings persist in localStorage across sessions
 - [x] Verified: BGM autoplays after PLAY click, toggles mute correctly, persistence works
-- [!] Note: the BGM source is a ripped YouTube track — replace with a licensed/royalty-free file before public deploy
+- [x] BGM replaced with a licensed Suno track ('Moonlit Cobblestone Trail') — copyright liability resolved (v17)
 
 ### Accounts + analytics (v11)
 - [x] Leaderboard submit gated behind Supabase email+password auth (REST, no library)
@@ -127,6 +127,13 @@ Issued at: ..."`, sends to Edge Function, stores session
 - [x] Landing links updated from `play.html` to `/play` to skip Cloudflare's auto-redirect of .html
 - [x] Favicon added (silences /favicon.ico 404)
 - [x] Verified prod end-to-end: landing renders, /play loads canvas, Supabase config wired, debug hook absent
+
+### GitHub + CI/CD (v16)
+- [x] Whitelist .gitignore — original asset packs (Buildings/, Units/, assetsv2/, music/, etc) excluded; only game/ + supabase/ + docs tracked
+- [x] Initial commit pushed to https://github.com/wahyufa/fable-kingdom
+- [x] Cloudflare Pages connected to GitHub repo (root directory: game/, no build step)
+- [x] Auto-deploy verified end-to-end: push → CF picks up commit SHA → live in <25 seconds
+- [x] CI smoke test: marker added, deployed, removed, redeployed — full loop works
 
 ## Backlog (ideas, not started)
 - [ ] Touch controls for mobile
