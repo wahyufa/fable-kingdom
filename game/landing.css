@@ -170,6 +170,24 @@ h2 {
   color: var(--ink);
 }
 
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-link {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: #fff;
+  text-decoration: none;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+  opacity: 0.85;
+  transition: opacity 0.12s;
+}
+
+.nav-link:hover { opacity: 1; }
+
 /* ---------- Hero ---------- */
 
 .hero-full {
@@ -285,10 +303,240 @@ h2 {
 
 .footer .x-link:hover { color: #fff; }
 
+/* ---------- Lore page ---------- */
+
+.lore-hero {
+  position: relative;
+  min-height: 100vh;
+  background: url('assets/landing/hero.png') center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+
+.lore-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(12, 23, 16, 0.55) 0%, rgba(12, 23, 16, 0.35) 40%, var(--fade) 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.lore-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  padding: 130px 24px 60px;
+  text-align: center;
+}
+
+.lore-hero h1 {
+  font-family: var(--font-pixel);
+  font-size: clamp(16px, 2.6vw, 28px);
+  line-height: 1.7;
+  color: #fff;
+  text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+  margin-bottom: 32px;
+}
+
+.lore-intro {
+  font-size: 11px;
+  line-height: 2.2;
+  color: rgba(244, 231, 208, 0.92);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
+  margin-bottom: 18px;
+}
+
+.lore-intro-soft {
+  font-size: 10px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+.lore-lands,
+.lore-factions,
+.lore-people,
+.lore-cta {
+  background: var(--fade);
+  position: relative;
+  isolation: isolate;
+}
+
+.lore-factions {
+  background: url('assets/landing/forest.png') center / cover no-repeat var(--fade);
+}
+
+.lore-factions::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, var(--fade) 0%, rgba(12, 23, 16, 0.78) 30%, rgba(12, 23, 16, 0.78) 70%, var(--fade) 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.lore-factions .section-inner { z-index: 1; }
+
+/* The Lands — single column, narrative entries */
+.land-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 720px;
+  margin: 44px auto 0;
+  text-align: left;
+}
+
+.land {
+  background: var(--cream);
+  border: 6px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.35);
+  padding: 22px 28px;
+}
+
+.land h3 {
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  color: var(--wood);
+  margin-bottom: 12px;
+}
+
+.land p {
+  font-size: 10px;
+  line-height: 2;
+  color: var(--ink-soft, #6d5440);
+}
+
+/* Factions — pixel sprite + text card. 6-col grid lets us center the bottom row of 2 cards under the row of 3. */
+.faction-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 22px;
+  margin: 44px auto 0;
+  max-width: 1000px;
+  text-align: left;
+}
+
+.faction-card { grid-column: span 2; }
+.faction-card:nth-child(4) { grid-column: 2 / span 2; }
+.faction-card:nth-child(5) { grid-column: 4 / span 2; }
+
+.faction-card {
+  background: var(--cream);
+  border: 6px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.35);
+  padding: 26px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Show the first 192x192 frame natively — sprite sheets stored as <img> use object-fit */
+.faction-img {
+  width: 144px;
+  height: 144px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  margin-bottom: 6px;
+}
+
+.faction-card h3 {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  color: var(--wood);
+  margin: 4px 0 14px;
+  line-height: 1.7;
+}
+
+.faction-card p {
+  font-size: 9px;
+  line-height: 2;
+  color: var(--ink-soft, #6d5440);
+}
+
+.faction-card.faction-red    { box-shadow: 0 10px 0 rgba(120, 30, 30, 0.45); }
+.faction-card.faction-purple { box-shadow: 0 10px 0 rgba(60, 30, 110, 0.45); }
+.faction-card.faction-black  { box-shadow: 0 10px 0 rgba(20, 20, 30, 0.55); }
+.faction-card.faction-goblin { box-shadow: 0 10px 0 rgba(80, 60, 30, 0.45); }
+
+/* The People — avatar-led cards */
+.people-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 22px;
+  margin-top: 44px;
+  text-align: left;
+}
+
+.person-card {
+  background: var(--cream);
+  border: 6px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.35);
+  padding: 24px 22px 26px;
+  text-align: center;
+}
+
+.person-avatar {
+  width: 128px;
+  height: 128px;
+  image-rendering: pixelated;
+  margin: 0 auto 14px;
+  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.25));
+}
+
+.person-card h3 {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  color: var(--wood);
+  margin-bottom: 8px;
+}
+
+.person-tag {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+  margin-bottom: 14px;
+}
+
+.person-card p:not(.person-tag) {
+  font-size: 9px;
+  line-height: 2;
+  color: var(--ink-soft, #6d5440);
+  text-align: left;
+}
+
+/* Final CTA */
+.lore-cta {
+  text-align: center;
+}
+
+.lore-cta .section-inner {
+  padding: 130px 24px;
+}
+
+.lore-cta h2 {
+  margin-bottom: 18px;
+}
+
+.lore-cta .lore-intro {
+  max-width: 520px;
+  margin: 0 auto 36px;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 860px) {
   .card-grid { grid-template-columns: 1fr; }
   .section-inner { padding: 110px 24px; }
   .nav-logo img { height: 38px; }
+  .nav-links { gap: 18px; }
+  .faction-grid { grid-template-columns: 1fr; }
+  .people-grid { grid-template-columns: 1fr; }
 }
