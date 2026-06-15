@@ -121,11 +121,14 @@ h2 {
   position: fixed;
   inset: 0 0 auto 0;
   z-index: 50;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   padding: 16px clamp(24px, 4vw, 56px);
 }
+
+.nav-logo { justify-self: start; }
+.nav > .btn-outline { justify-self: end; }
 
 /* Progressive blur: strongest at the top edge, fading to none at the
    nav's bottom. Two masked backdrop layers approximate the gradient. */
@@ -139,8 +142,8 @@ h2 {
 }
 
 .nav::before {
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   mask-image: linear-gradient(to bottom, black 0%, transparent 75%);
   -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 75%);
 }
@@ -173,6 +176,7 @@ h2 {
 .nav-links {
   display: flex;
   align-items: center;
+  justify-self: center;
   gap: 28px;
 }
 
@@ -187,6 +191,22 @@ h2 {
 }
 
 .nav-link:hover { opacity: 1; }
+
+.nav-social {
+  display: inline-flex;
+  align-items: center;
+  color: #fff;
+  opacity: 0.85;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+  transition: opacity 0.12s;
+}
+
+.nav-social:hover { opacity: 1; }
+
+.nav-social svg {
+  width: 18px;
+  height: 18px;
+}
 
 /* ---------- Hero ---------- */
 
@@ -221,6 +241,38 @@ h2 {
   text-shadow: 2px 2px 0 rgba(20, 40, 24, 0.75);
   margin-bottom: 36px;
 }
+
+/* Glassy contract-address chip under the PLAY button */
+.hero-ca {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 23%);
+  backdrop-filter: blur(41px);
+  -webkit-backdrop-filter: blur(41px);
+}
+
+.hero-ca-label {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(20, 40, 24, 0.75);
+}
+
+.hero-ca-value {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(20, 40, 24, 0.75);
+  word-break: break-all;
+}
+
+.hero-ca-value.is-live { cursor: pointer; }
 
 /* ---------- Features ---------- */
 

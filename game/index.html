@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
   <title>Fable Kingdom — A tiny medieval world</title>
   <meta name="description" content="Fable Kingdom is a tiny medieval world you can play free — built in the open, fueled by its community." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -17,8 +18,10 @@
     <div class="nav-links">
       <a class="nav-link" href="/lore">LORE</a>
       <a class="nav-link" href="/roadmap">ROADMAP</a>
-      <a class="btn-outline" href="/play">PLAY GAME</a>
+      <a class="nav-social" href="https://x.com/fablekingdom_" target="_blank" rel="noopener" aria-label="Follow on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+      <a class="nav-social" href="https://t.me/fable_kingdom" target="_blank" rel="noopener" aria-label="Join on Telegram"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
     </div>
+    <a class="btn-outline" href="/play">PLAY GAME</a>
   </nav>
 
   <header class="hero-full">
@@ -26,6 +29,11 @@
       <img class="hero-logo" src="assets/landing/logo.png" alt="Fable Kingdom" />
       <p class="hero-tagline">Where every sword tells a fable.</p>
       <a class="btn-pill btn-big" href="/play">PLAY GAME</a>
+      <!-- To go live: set data-ca on #ca-address to the Solana mint address. -->
+      <div class="hero-ca">
+        <span class="hero-ca-label">CA:</span>
+        <code id="ca-address" class="hero-ca-value" data-ca="">coming soon</code>
+      </div>
     </div>
   </header>
 
@@ -72,5 +80,28 @@
     <a class="x-link" href="https://x.com/fablekingdom_" target="_blank" rel="noopener" aria-label="Follow on X"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
     <a class="tg-link" href="https://t.me/fable_kingdom" target="_blank" rel="noopener" aria-label="Join on Telegram"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
   </footer>
+
+  <script>
+    // Hero contract-address chip: stays "coming soon" until data-ca is filled.
+    // To launch the token, set data-ca on #ca-address to the Solana mint address.
+    // Once live, clicking the address copies it to the clipboard.
+    (function () {
+      var el = document.getElementById('ca-address');
+      if (!el) return;
+      var ca = (el.getAttribute('data-ca') || '').trim();
+      if (!ca) return;
+
+      el.textContent = ca;
+      el.classList.add('is-live');
+      el.title = 'Click to copy';
+      el.addEventListener('click', function () {
+        navigator.clipboard.writeText(ca).then(function () {
+          var prev = el.textContent;
+          el.textContent = 'COPIED';
+          setTimeout(function () { el.textContent = prev; }, 1200);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

@@ -87,6 +87,13 @@ canvas {
   margin-bottom: 26px;
 }
 
+/* Start-screen note: 2 lines, breathing room from buttons, no panel widening */
+.start-hint {
+  max-width: 390px;
+  margin: 20px auto 0;
+  line-height: 1.9;
+}
+
 .btn {
   font-family: var(--font-pixel);
   font-size: 16px;
@@ -172,7 +179,7 @@ canvas {
   flex-direction: column;
   gap: 16px;
   margin-bottom: 24px;
-  align-items: stretch;
+  align-items: center;
 }
 
 .mode-card {
@@ -261,6 +268,25 @@ canvas {
   padding: 6px 12px;
   margin: -16px 0 22px;
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Tilted "current season" flag on the start panel, styled like the
+   coming-soon mode badge */
+#start-screen .panel { position: relative; }
+
+.season-flag {
+  position: absolute;
+  top: -14px;
+  right: -12px;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--color-wood-dark);
+  background: var(--color-gold);
+  border: 3px solid var(--color-wood-dark);
+  border-radius: 8px;
+  padding: 6px 12px;
+  transform: rotate(6deg);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
 }
 
 .lb-tabs { margin-bottom: 22px; }

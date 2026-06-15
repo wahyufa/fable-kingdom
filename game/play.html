@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
   <title>Fable Kingdom — The Stolen Banner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
@@ -15,6 +16,7 @@
     <!-- Start screen -->
     <div id="start-screen" class="overlay">
       <div class="panel">
+        <span class="season-flag">SEASON 0 · GENESIS</span>
         <h1>Fable Kingdom</h1>
         <p class="subtitle">The Stolen Banner</p>
         <p class="controls">
@@ -29,6 +31,8 @@
           <button id="lb-btn" class="btn btn-stack-item btn-secondary hidden">LEADERBOARD</button>
           <button id="auth-btn" class="btn btn-stack-item btn-secondary hidden">LOGIN</button>
         </div>
+        <p class="hint start-hint">No wallet needed to play.<br />Connect only to join the leaderboard.</p>
+        <!-- 2 lines via the <br>; width capped under the panel so it won't widen it -->
         <p class="account-line" id="account-line"></p>
       </div>
     </div>
