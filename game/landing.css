@@ -295,13 +295,17 @@ h2 {
 
 .footer a { color: var(--gold); }
 
-.footer .x-link {
+.footer .x-link,
+.footer .tg-link {
   display: inline-flex;
   color: rgba(244, 231, 208, 0.65);
   transition: color 0.12s;
 }
 
-.footer .x-link:hover { color: #fff; }
+.footer .x-link:hover,
+.footer .tg-link:hover { color: #fff; }
+
+.footer .ca-line { color: rgba(244, 231, 208, 0.65); }
 
 /* ---------- Lore page ---------- */
 

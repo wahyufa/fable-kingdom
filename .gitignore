@@ -55,3 +55,7 @@ game/bug_*.png
 # Marketing assets (regenerated from video/ working files)
 /fable-kingdom-trailer*.mp4
 /video/
+
+# Private marketing strategy (local only)
+/marketing/
+/clips-final/
