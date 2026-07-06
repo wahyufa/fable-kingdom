@@ -7,6 +7,7 @@ Thumbs.db
 
 # Claude Code session config (personal)
 .claude/
+CLAUDE.md
 
 # Node / tool caches
 node_modules/
@@ -15,16 +16,13 @@ node_modules/
 # Cloudflare Pages deploy artifact (rebuilt on every deploy)
 /dist/
 
-# Original Tiny Swords asset packs — kept locally for re-derivation, not in repo.
+# Original Tiny Swords asset packs (Pixel Frog) — kept locally for re-derivation, not in repo.
 # Final game art lives in game/assets/, which IS tracked.
-/Buildings/
-/Particle FX/
-/Terrain/
-/UI Elements/
-/Units/
-/assetsv2/
-/landing/
-/music/
+/asset-packs/
+
+# Local media: brand/landing art sources, music, video working files,
+# private marketing strategy. Not in repo.
+/media/
 
 # Test/debug screenshots produced by agent-browser
 /prod_*.png
@@ -52,10 +50,5 @@ game/c_*.png
 game/l_*.png
 game/bug_*.png
 
-# Marketing assets (regenerated from video/ working files)
+# Marketing assets (regenerated from media/video/ working files)
 /fable-kingdom-trailer*.mp4
-/video/
-
-# Private marketing strategy (local only)
-/marketing/
-/clips-final/

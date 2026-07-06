@@ -5,6 +5,7 @@
   --color-gold: #f3b340;
   --color-red: #e04a3f;
   --color-blue: #4aa0dd;
+  --color-green: #5d9c46;
   --font-pixel: 'Press Start 2P', 'Courier New', monospace;
 }
 
@@ -145,6 +146,21 @@ canvas {
   color: #dceeff;
 }
 
+/* Build menu (adventure plots) reuses the upgrade-card layout; options the
+   player can't afford stay visible but muted */
+.upgrade-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.build-funds {
+  font-size: 10px;
+  color: var(--color-gold);
+  text-shadow: 1px 1px 0 var(--color-wood-dark);
+  margin: 18px 0;
+}
+
 .btn-row {
   display: flex;
   gap: 18px;
@@ -201,12 +217,148 @@ canvas {
 }
 
 .mode-card-red { background: var(--color-red); }
+.mode-card-green { background: var(--color-green); }
 
 .mode-card:not(:disabled):hover { filter: brightness(1.1); }
 
 .mode-card:not(:disabled):active {
   transform: translateY(6px);
   box-shadow: 0 0 0 var(--color-wood-dark);
+}
+
+/* ---------- Adventure ledger (key I) ---------- */
+
+.ledger-panel { min-width: 720px; }
+.ledger-panel-wide { min-width: 980px; }
+
+.ledger-hint {
+  font-size: 8px;
+  color: rgba(58, 39, 49, 0.6);
+  margin: 0 0 8px;
+}
+
+.btn-tiny {
+  font-size: 8px;
+  padding: 6px 10px;
+  border-width: 2px;
+  box-shadow: 0 2px 0 var(--color-wood-dark);
+}
+
+.btn-tiny:active { transform: translateY(2px); box-shadow: 0 0 0 var(--color-wood-dark); }
+
+.btn-tiny:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.ledger-cols {
+  display: flex;
+  gap: 44px;
+  justify-content: center;
+  text-align: left;
+  margin: 26px 0 22px;
+}
+
+.ledger-col { width: 280px; }
+
+.ledger-col h2 {
+  font-size: 12px;
+  margin: 18px 0 10px;
+  color: var(--color-wood-dark);
+}
+
+.ledger-col h2:first-child { margin-top: 0; }
+
+.ledger-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  padding: 5px 0;
+}
+
+.ledger-row img {
+  width: 30px;
+  height: 30px;
+  image-rendering: pixelated;
+}
+
+.ledger-label { flex: 1; line-height: 1.6; }
+
+.ledger-val { color: #7a5b32; white-space: nowrap; }
+
+.skill-bar {
+  height: 10px;
+  background: rgba(58, 39, 49, 0.22);
+  border: 2px solid var(--color-wood-dark);
+  border-radius: 4px;
+  margin: 2px 0 10px;
+  overflow: hidden;
+}
+
+.skill-fill { height: 100%; background: var(--color-gold); }
+
+.ledger-date {
+  font-size: 8px;
+  color: rgba(58, 39, 49, 0.6);
+  margin: 0 0 8px;
+}
+
+.quest-done .ledger-label,
+.quest-done .ledger-val { color: #3a7d44; }
+
+.quest-reward {
+  font-size: 8px;
+  color: rgba(58, 39, 49, 0.6);
+  margin: 0 0 10px;
+}
+
+/* ---------- Spinner wheel (key O) ---------- */
+
+.wheel-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 24px auto 16px;
+}
+
+.wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 6px solid var(--color-wood-dark);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+  /* 6 segments matching ADV.spinner.prizes, alternating game palette colors */
+  background: conic-gradient(
+    var(--color-green)  0deg   60deg,
+    var(--color-blue)   60deg  120deg,
+    var(--color-red)    120deg 180deg,
+    var(--color-gold)   180deg 240deg,
+    var(--color-green)  240deg 300deg,
+    var(--color-blue)   300deg 360deg
+  );
+  transition: transform 2.2s cubic-bezier(0.15, 0.85, 0.3, 1);
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 20px solid var(--color-wood-dark);
+}
+
+.wheel-result {
+  font-size: 12px;
+  color: var(--color-gold);
+  text-shadow: 1px 1px 0 var(--color-wood-dark);
+  min-height: 14px;
+  margin-bottom: 18px;
 }
 
 /* Locked "coming soon" mode card */

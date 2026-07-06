@@ -50,6 +50,10 @@
             <span class="mode-name">SURVIVAL</span>
             <span class="mode-desc">Endless waves of escalating chaos. Beat your best score and climb the leaderboard.</span>
           </button>
+          <button id="adventure-btn" class="mode-card mode-card-green">
+            <span class="mode-name">ADVENTURE</span>
+            <span class="mode-desc">A peaceful isle to roam. Chop wood, mine gold, and tend the flock — every haul is saved to your kingdom's stores.</span>
+          </button>
           <button class="mode-card mode-card-soon" disabled aria-disabled="true">
             <span class="mode-soon-badge">SOON</span>
             <span class="mode-name">HOMESTEAD</span>
@@ -130,6 +134,60 @@
       </div>
     </div>
 
+    <!-- Adventure ledger: stores, skills, daily quests, shop (key I) -->
+    <div id="ledger-screen" class="overlay hidden">
+      <div class="panel ledger-panel ledger-panel-wide">
+        <h1>Kingdom Ledger</h1>
+        <div class="ledger-cols">
+          <div class="ledger-col">
+            <h2>STORES</h2>
+            <div id="ledger-stores" class="ledger-rows"></div>
+            <h2>SKILLS</h2>
+            <div id="ledger-skills" class="ledger-rows"></div>
+          </div>
+          <div class="ledger-col">
+            <h2>DAILY QUESTS</h2>
+            <p class="ledger-date" id="ledger-date"></p>
+            <div id="ledger-quests" class="ledger-rows"></div>
+          </div>
+          <div class="ledger-col">
+            <h2>SHOP — PAWN SKINS</h2>
+            <p class="ledger-hint">Cosmetic only — no effect on stats.</p>
+            <div id="ledger-shop" class="ledger-rows"></div>
+          </div>
+        </div>
+        <button id="ledger-close" class="btn btn-small">CLOSE</button>
+      </div>
+    </div>
+
+    <!-- Spinner wheel: free daily spin + paid spin (key O) -->
+    <div id="spinner-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Wheel of Fortune</h1>
+        <div class="wheel-wrap">
+          <div class="wheel" id="wheel-disc"></div>
+          <div class="wheel-pointer"></div>
+        </div>
+        <p class="wheel-result" id="wheel-result">&nbsp;</p>
+        <div class="btn-row">
+          <button id="wheel-free-btn" class="btn btn-small">FREE SPIN</button>
+          <button id="wheel-paid-btn" class="btn btn-small btn-red">SPIN — <span id="wheel-paid-cost"></span> GOLD</button>
+        </div>
+        <button id="wheel-close" class="btn btn-small btn-ghost-link">CLOSE</button>
+      </div>
+    </div>
+
+    <!-- Build menu: opens at an empty plot in Adventure (Space near a plot) -->
+    <div id="build-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Raise a Building</h1>
+        <p class="subtitle">Pick what to build on this plot. Colors match your equipped skin.</p>
+        <div class="upgrade-row" id="build-options"></div>
+        <p class="build-funds" id="build-funds"></p>
+        <button id="build-close" class="btn btn-small btn-ghost-link">CANCEL</button>
+      </div>
+    </div>
+
     <!-- Pause menu -->
     <div id="pause-screen" class="overlay hidden">
       <div class="panel">
@@ -142,7 +200,8 @@
         </div>
         <p class="controls">
           <span><b>WASD / Arrows</b> — move</span>
-          <span><b>Space / Click</b> — attack</span>
+          <span><b>Space / Click</b> — attack / work</span>
+          <span><b>I</b> — ledger · <b>O</b> — wheel · <b>1-3</b> — tools</span>
           <span><b>ESC / P</b> — pause</span>
           <span><b>M</b> — mute all</span>
         </p>
@@ -177,6 +236,7 @@
 
   <script src="config.js"></script>
   <script src="campaign.js"></script>
+  <script src="adventure.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
