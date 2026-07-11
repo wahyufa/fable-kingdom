@@ -95,6 +95,23 @@ canvas {
   line-height: 1.9;
 }
 
+/* Homestead teaser — the mode picker is gone (PLAY drops into the isles),
+   so the "coming soon" note lives on the start screen instead */
+.soon-line {
+  max-width: 420px;
+  margin: 18px auto 0;
+  font-size: 9px;
+  line-height: 1.8;
+  color: rgba(58, 39, 49, 0.7);
+}
+
+.soon-line .mode-soon-badge {
+  position: static;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 .btn {
   font-family: var(--font-pixel);
   font-size: 16px;
@@ -160,6 +177,39 @@ canvas {
   text-shadow: 1px 1px 0 var(--color-wood-dark);
   margin: 18px 0;
 }
+
+/* Mode gate confirm panel (Story/Survival entered via world NPCs) */
+.gate-panel { max-width: 560px; }
+
+.gate-panel h1 {
+  font-size: 26px;
+  margin-bottom: 12px;
+}
+
+/* The shared .subtitle tucks itself under a big h1 with a negative margin;
+   here the speaker's name sits in between, so give it room back */
+.gate-panel .subtitle {
+  margin-top: 0;
+  line-height: 1.7;
+}
+
+.gate-avatar {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 6px;
+  image-rendering: pixelated;
+}
+
+.gate-name {
+  font-size: 10px;
+  color: var(--color-gold);
+  text-shadow: 1px 1px 0 var(--color-wood-dark);
+  margin-bottom: 14px;
+}
+
+/* Marla's shop reuses the ledger row styles in a standalone panel */
+.shop-rows { min-width: 320px; }
 
 .btn-row {
   display: flex;

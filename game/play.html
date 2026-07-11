@@ -32,35 +32,9 @@
           <button id="auth-btn" class="btn btn-stack-item btn-secondary hidden">LOGIN</button>
         </div>
         <p class="hint start-hint">No wallet needed to play.<br />Connect only to join the leaderboard.</p>
+        <p class="soon-line"><span class="mode-soon-badge">SOON</span> HOMESTEAD — rebuild Bluehaven, one quiet kingdom of your own</p>
         <!-- 2 lines via the <br>; width capped under the panel so it won't widen it -->
         <p class="account-line" id="account-line"></p>
-      </div>
-    </div>
-
-    <!-- Mode picker (shown after clicking PLAY) -->
-    <div id="mode-screen" class="overlay hidden">
-      <div class="panel">
-        <h1>Choose Your Path</h1>
-        <div class="mode-list">
-          <button id="story-btn" class="mode-card">
-            <span class="mode-name">STORY</span>
-            <span class="mode-desc">A six-act tale. Chase Captain Redmane across the isles, topple his castle, and take the King's Banner home.</span>
-          </button>
-          <button id="survival-btn" class="mode-card mode-card-red">
-            <span class="mode-name">SURVIVAL</span>
-            <span class="mode-desc">Endless waves of escalating chaos. Beat your best score and climb the leaderboard.</span>
-          </button>
-          <button id="adventure-btn" class="mode-card mode-card-green">
-            <span class="mode-name">ADVENTURE</span>
-            <span class="mode-desc">A peaceful isle to roam. Chop wood, mine gold, and tend the flock — every haul is saved to your kingdom's stores.</span>
-          </button>
-          <button class="mode-card mode-card-soon" disabled aria-disabled="true">
-            <span class="mode-soon-badge">SOON</span>
-            <span class="mode-name">HOMESTEAD</span>
-            <span class="mode-desc">Rebuild Bluehaven after the war. Send your pawns to gather, raise, and build — grow a quiet kingdom of your own.</span>
-          </button>
-        </div>
-        <button id="mode-back" class="btn btn-small btn-ghost-link">BACK</button>
       </div>
     </div>
 
@@ -105,7 +79,10 @@
           <button id="submit-btn" class="btn btn-small">SUBMIT SCORE</button>
           <button id="submit-login-btn" class="btn btn-small hidden">LOGIN TO SUBMIT</button>
         </div>
-        <button id="restart-btn" class="btn">PLAY AGAIN</button>
+        <div class="btn-row">
+          <button id="restart-btn" class="btn">PLAY AGAIN</button>
+          <button id="isles-btn" class="btn btn-secondary">BACK TO THE ISLES</button>
+        </div>
       </div>
     </div>
 
@@ -116,7 +93,7 @@
         <p class="subtitle">The Banner is home. Bluehaven rises again.</p>
         <p class="subtitle" id="victory-stats"></p>
         <p class="best" id="victory-best"></p>
-        <button id="menu-btn" class="btn">MAIN MENU</button>
+        <button id="menu-btn" class="btn">BACK TO THE ISLES</button>
       </div>
     </div>
 
@@ -134,9 +111,9 @@
       </div>
     </div>
 
-    <!-- Adventure ledger: stores, skills, daily quests, shop (key I) -->
+    <!-- Adventure ledger: stores, skills, daily quests (key I) -->
     <div id="ledger-screen" class="overlay hidden">
-      <div class="panel ledger-panel ledger-panel-wide">
+      <div class="panel ledger-panel">
         <h1>Kingdom Ledger</h1>
         <div class="ledger-cols">
           <div class="ledger-col">
@@ -150,13 +127,33 @@
             <p class="ledger-date" id="ledger-date"></p>
             <div id="ledger-quests" class="ledger-rows"></div>
           </div>
-          <div class="ledger-col">
-            <h2>SHOP — PAWN SKINS</h2>
-            <p class="ledger-hint">Cosmetic only — no effect on stats.</p>
-            <div id="ledger-shop" class="ledger-rows"></div>
-          </div>
         </div>
         <button id="ledger-close" class="btn btn-small">CLOSE</button>
+      </div>
+    </div>
+
+    <!-- Merchant Marla's shop — opened by talking to her in the world -->
+    <div id="shop-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>Marla's Wares</h1>
+        <p class="ledger-hint">Pawn skins — cosmetic only, no effect on stats.</p>
+        <div id="ledger-shop" class="ledger-rows shop-rows"></div>
+        <p class="build-funds" id="shop-funds"></p>
+        <button id="shop-close" class="btn btn-small">CLOSE</button>
+      </div>
+    </div>
+
+    <!-- Mode gate confirm — talking to a gatekeeper NPC offers a combat mode -->
+    <div id="gate-screen" class="overlay hidden">
+      <div class="panel gate-panel">
+        <img id="gate-avatar" class="gate-avatar" src="" alt="" />
+        <h1 id="gate-title"></h1>
+        <p class="gate-name" id="gate-name"></p>
+        <p class="subtitle" id="gate-text"></p>
+        <div class="btn-row">
+          <button id="gate-go" class="btn btn-red">FIGHT</button>
+        </div>
+        <button id="gate-cancel" class="btn btn-small btn-ghost-link">NOT YET</button>
       </div>
     </div>
 

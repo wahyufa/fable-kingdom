@@ -94,6 +94,23 @@ window.ADVENTURE = {
       ], quest: { res: 'wood', amount: 10, rewardGold: 30, rewardXpSkill: 'woodcutting', rewardXp: 50,
         askText: 'Patching the porch. 10 wood and I\'ll finally finish the job.',
         doneText: 'That\'ll do it. Come sit on the porch once it\'s done.' } },
+      // --- Role NPCs: the isles are the hub, these are its doorways ---
+      // (role NPCs skip the quest/flavor dialog — see talkToNpc in game.js)
+      { id: 'brack', sprite: 'yellow_warrior', name: 'Sergeant Brack', avatar: 'assets/avatar_npc8.png',
+        tx: 48, ty: 30, role: 'survival',
+        gateTitle: 'The Trial Grounds',
+        gateText: 'Endless waves on the old battle isle — no mercy, no second chances, glory for the boldest. Your kingdom\'s stores stay safe at home. Ready to test your mettle?',
+        gateConfirm: 'FIGHT',
+        lines: ['The trial waits for no one. Speak up when you\'re ready.'] },
+      { id: 'rosalind', sprite: 'yellow_monk', name: 'Herald Rosalind', avatar: 'assets/avatar_npc9.png',
+        tx: 16, ty: 26, role: 'story',
+        gateTitle: 'The Stolen Banner',
+        gateText: 'Captain Redmane sails with the King\'s Banner and the whole tale is waiting to be told — six acts across the isles, from first landing to his castle gate. Shall I begin?',
+        gateConfirm: 'BEGIN THE TALE',
+        lines: ['Every kingdom is a story. Ours just needs someone to finish it.'] },
+      { id: 'marla', sprite: 'yellow_pawn', name: 'Merchant Marla', avatar: 'assets/avatar_npc10.png',
+        tx: 15, ty: 33, role: 'shop',
+        lines: ['Finest cloth on the isles, dyed and stitched by my own hand.'] },
     ],
   },
   // Harvest nodes: swings per node, yield + skill XP per swing, respawn (seconds)

@@ -276,6 +276,8 @@
       if (state.mode === 'ledger') { toggleLedger(); return; }
       if (state.mode === 'spinner') { toggleSpinner(); return; }
       if (state.mode === 'build') { closeBuildMenu(); return; }
+      if (state.mode === 'gate') { closeGate(); return; }
+      if (state.mode === 'shop') { closeShop(); return; }
       if (state.mode === 'playing' || state.mode === 'paused') togglePause();
       return;
     }
@@ -1002,6 +1004,9 @@
 
   function gameOver() {
     state.mode = 'gameover';
+    // Reset the heading — the pause-exit path retitles it "Run Ended", and
+    // returning via the isles no longer forces a page reload in between
+    document.querySelector('#gameover-screen h1').textContent = 'Defeated!';
     document.getElementById('final-stats').textContent = state.campaign
       ? `Act ${state.campaign.act + 1}: ${ACTS[state.campaign.act].title} — Score ${state.score}`
       : `Wave ${state.wave} — Score ${state.score}`;
@@ -1393,6 +1398,10 @@
 
   function talkToNpc(npc) {
     player.flip = npc.x < player.x;
+    // Role NPCs are the hub's doorways: the merchant opens her shop, the
+    // gatekeepers offer a combat mode behind a confirm panel.
+    if (npc.role === 'shop') { openShop(); return; }
+    if (npc.role) { openGate(npc); return; }
     const who = { name: npc.name, img: npc.avatar };
     const a = state.adventure;
     const q = npc.quest;
@@ -2135,6 +2144,12 @@
           `<span class="ledger-val">${status}</span></div>` +
           `<p class="quest-reward">+${reward} GOLD · +${ADV.daily.xpReward} XP</p>`;
       }).join('');
+  }
+
+  // Merchant Marla's shop screen — opened by talking to her in the world
+  // (the skin stock used to live in the ledger; same rows, same delegation)
+  function renderShop() {
+    const a = state.adventure;
     document.getElementById('ledger-shop').innerHTML =
       ADV.cosmetics.skins.map((skin) => {
         const owned = a.cosmetics.owned.includes(skin.id);
@@ -2146,6 +2161,7 @@
             : `<button class="btn btn-tiny" data-buy-skin="${skin.id}"${a.gold < skin.cost ? ' disabled' : ''}>BUY ${skin.cost}g</button>`;
         return `<div class="ledger-row"><span class="ledger-label">${skin.name}</span>${action}</div>`;
       }).join('');
+    document.getElementById('shop-funds').textContent = `YOUR GOLD: ${a.gold}`;
   }
 
   // Event delegation: one listener handles every BUY/EQUIP button, including
@@ -2162,12 +2178,12 @@
       a.cosmetics.equipped = buyId;
       sfx.coin();
       saveAdventure();
-      renderLedger();
+      renderShop();
     } else if (equipId) {
       a.cosmetics.equipped = equipId;
       sfx.pick();
       saveAdventure();
-      renderLedger();
+      renderShop();
     }
   }
 
@@ -2372,6 +2388,59 @@
     const btn = e.target.closest('[data-build-type]');
     if (!btn || btn.disabled) return;
     chooseBuild(btn.dataset.buildType);
+  }
+
+  // ---------- Mode gates + shop (Adventure is the hub world) ----------
+  // Story and Survival are entered by talking to gatekeeper NPCs in the world;
+  // the confirm panel keeps a mis-tap from yanking the player out of the isles.
+  let activeGate = null;
+
+  function openGate(npc) {
+    activeGate = npc;
+    state.mode = 'gate';
+    document.getElementById('gate-avatar').src = npc.avatar;
+    document.getElementById('gate-title').textContent = npc.gateTitle;
+    document.getElementById('gate-name').textContent = npc.name.toUpperCase();
+    document.getElementById('gate-text').textContent = npc.gateText;
+    document.getElementById('gate-go').textContent = npc.gateConfirm;
+    document.getElementById('gate-screen').classList.remove('hidden');
+  }
+
+  function closeGate() {
+    activeGate = null;
+    state.mode = 'playing';
+    attackQueued = false;
+    document.getElementById('gate-screen').classList.add('hidden');
+  }
+
+  function confirmGate() {
+    if (!activeGate) return;
+    const role = activeGate.role;
+    activeGate = null;
+    document.getElementById('gate-screen').classList.add('hidden');
+    saveAdventure();   // stores are safe at home before the fighting starts
+    if (role === 'survival') startSurvival();
+    else startCampaign();
+  }
+
+  function openShop() {
+    state.mode = 'shop';
+    renderShop();
+    document.getElementById('shop-screen').classList.remove('hidden');
+  }
+
+  function closeShop() {
+    state.mode = 'playing';
+    attackQueued = false;
+    document.getElementById('shop-screen').classList.add('hidden');
+  }
+
+  // Every combat run now starts from the isles, so the end screens always
+  // offer the way back. Fully rebuilds the adventure world from the save.
+  function returnToIsles() {
+    exitingFromPause = false;
+    navigateTo(null);
+    startAdventure();
   }
 
   // ---------- Upgrades ----------
@@ -3251,7 +3320,7 @@
   // End-of-run screens (gameover / victory) are included so LOGIN TO SUBMIT
   // can replace them cleanly instead of stacking the auth modal on top.
   const MENU_OVERLAYS = [
-    'start-screen', 'mode-screen', 'lb-screen', 'auth-screen',
+    'start-screen', 'lb-screen', 'auth-screen',
     'gameover-screen', 'victory-screen', 'pause-screen',
   ];
   let authReturnTo = 'start-screen'; // where auth-close / successful login lands
@@ -3304,22 +3373,11 @@
   }
 
   // ---------- UI wiring ----------
-  document.getElementById('play-btn').addEventListener('click', () => navigateTo('mode-screen'));
-  document.getElementById('mode-back').addEventListener('click', () => navigateTo('start-screen'));
-
-  document.getElementById('story-btn').addEventListener('click', () => {
+  // PLAY drops straight into the isles — Story and Survival are entered
+  // in-world through their gatekeeper NPCs, not from a menu.
+  document.getElementById('play-btn').addEventListener('click', () => {
     initAudio();
     navigateTo(null); // hide every menu overlay
-    startCampaign();
-  });
-  document.getElementById('survival-btn').addEventListener('click', () => {
-    initAudio();
-    navigateTo(null);
-    startSurvival();
-  });
-  document.getElementById('adventure-btn').addEventListener('click', () => {
-    initAudio();
-    navigateTo(null);
     startAdventure();
   });
   // When player exits a Survival run with a real score, offer to submit it
@@ -3356,7 +3414,11 @@
     if (state.campaign) retryAct();
     else startSurvival();
   });
-  document.getElementById('menu-btn').addEventListener('click', () => location.reload());
+  document.getElementById('menu-btn').addEventListener('click', returnToIsles);
+  document.getElementById('isles-btn').addEventListener('click', returnToIsles);
+  document.getElementById('gate-go').addEventListener('click', confirmGate);
+  document.getElementById('gate-cancel').addEventListener('click', closeGate);
+  document.getElementById('shop-close').addEventListener('click', closeShop);
   document.getElementById('resume-btn').addEventListener('click', togglePause);
   document.getElementById('exit-btn').addEventListener('click', exitToMenu);
   document.getElementById('ledger-close').addEventListener('click', toggleLedger);
