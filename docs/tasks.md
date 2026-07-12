@@ -269,6 +269,14 @@ Issued at: ..."`, sends to Edge Function, stores session
 - [x] Verified via agent-browser: hero + nav render, cards 02/03 (keycaps inline in prose) and 07/08 (links, gold bullets) all readable, clicking DOCS from the landing nav lands on `/docs` with all 8 cards present, no console errors
 - Note: built through a temporary platform outage that blocked all write tools for a stretch — content was staged read-only and applied once tooling recovered
 
+### Mobile touch controls (v36)
+- [x] **Virtual joystick** (bottom-left, HTML overlay at z-index 5 — every menu overlay at z-10 automatically covers/blocks it): touch-tracked by finger identifier so a second touch can't steal the stick, 0.22 dead zone, feeds `touchVec` straight into the same movement vector as WASD in `updatePlayer`
+- [x] **Action button** (bottom-right ⚔): mirrors Space — tap = act/talk (advances dialog too), hold = keep working via `keys.Space`; system row up top: ☰ pause + I/O ledger/wheel shortcuts (I/O shown only on the isles, toggled by the three mode starters)
+- [x] **Canvas hotbar taps** swap tools (geometry mirrored from `renderAdventureUI`); `preventDefault` on canvas touchstart also swallows the synthetic mousedown so stray taps never queue attacks; `touch-action: none` stops scroll/zoom gestures
+- [x] Minimap moves to the top-left on touch devices (joystick owns the bottom-left corner — caught via screenshot)
+- [x] Detection: real touch points or `?touch=1` for desktop testing; UI stays fully hidden otherwise (regression-verified)
+- [x] Verified via agent-browser with synthesized TouchEvents: joystick hold moved the player and released cleanly, action button held beside a tree harvested wood, hotbar tap switched to pickaxe, pause/ledger buttons opened their screens; desktop (no flag) shows no touch UI; no console errors
+
 ### Homestead removed from all player-facing surfaces (v35)
 - [x] Removed at the user's call: the SOON teaser on the game start screen (play.html + its `.soon-line` CSS), and the "Homestead — a cozy village builder" entry on the roadmap's Later column. Grep confirms zero `homestead`/`soon-line` references left under game/; start screen and roadmap re-verified in the browser, console clean. (The separate Fable Homestead repo is untouched — this only de-advertises it here.)
 

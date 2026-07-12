@@ -316,6 +316,115 @@
     attackTowardMouse = true;
   });
 
+  // ---------- Touch controls (mobile) ----------
+  // Virtual joystick feeds the same movement vector as WASD; the big action
+  // button mirrors Space (tap = act/talk, hold = keep working). ?touch=1
+  // forces the UI on desktop for testing.
+  const IS_TOUCH = navigator.maxTouchPoints > 0 || 'ontouchstart' in window ||
+    new URLSearchParams(location.search).has('touch');
+  const touchVec = { x: 0, y: 0 };
+
+  // Ledger/wheel shortcuts only make sense on the isles — the mode starters
+  // call this to show/hide them (no-op cheap enough to run unconditionally)
+  function setTouchAdventureButtons(on) {
+    for (const id of ['touch-ledger', 'touch-wheel']) {
+      document.getElementById(id).classList.toggle('hidden', !on);
+    }
+  }
+
+  function initTouchUI() {
+    if (!IS_TOUCH) return;
+    document.getElementById('touch-ui').classList.remove('hidden');
+
+    const joy = document.getElementById('joystick');
+    const stick = document.getElementById('joystick-stick');
+    let joyId = null; // track "our" finger so a second touch can't steal the stick
+
+    function setStick(x, y) {
+      stick.style.transform = `translate(${x * 34}px, ${y * 34}px)`;
+    }
+    function handleJoy(t) {
+      const r = joy.getBoundingClientRect();
+      let dx = (t.clientX - (r.left + r.width / 2)) / (r.width / 2);
+      let dy = (t.clientY - (r.top + r.height / 2)) / (r.height / 2);
+      const len = Math.hypot(dx, dy);
+      if (len > 1) { dx /= len; dy /= len; }
+      if (len < 0.22) { dx = 0; dy = 0; } // dead zone
+      touchVec.x = dx;
+      touchVec.y = dy;
+      setStick(dx, dy);
+    }
+    joy.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (joyId !== null) return;
+      joyId = e.changedTouches[0].identifier;
+      initAudio();
+      handleJoy(e.changedTouches[0]);
+    }, { passive: false });
+    joy.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      for (const t of e.changedTouches) if (t.identifier === joyId) handleJoy(t);
+    }, { passive: false });
+    const endJoy = (e) => {
+      for (const t of e.changedTouches) {
+        if (t.identifier !== joyId) continue;
+        joyId = null;
+        touchVec.x = 0;
+        touchVec.y = 0;
+        setStick(0, 0);
+      }
+    };
+    joy.addEventListener('touchend', endJoy);
+    joy.addEventListener('touchcancel', endJoy);
+
+    const act = document.getElementById('touch-act');
+    act.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      initAudio();
+      if (state.mode === 'dialog') { advanceDialog(); return; }
+      keys.Space = true; // hold-to-keep-working reads this, same as the key
+      attackQueued = true;
+    }, { passive: false });
+    const endAct = (e) => { e.preventDefault(); keys.Space = false; };
+    act.addEventListener('touchend', endAct, { passive: false });
+    act.addEventListener('touchcancel', endAct, { passive: false });
+
+    document.getElementById('touch-pause').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (state.mode === 'playing' || state.mode === 'paused') togglePause();
+    }, { passive: false });
+    document.getElementById('touch-ledger').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (state.adventure && (state.mode === 'playing' || state.mode === 'ledger')) toggleLedger();
+    }, { passive: false });
+    document.getElementById('touch-wheel').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (state.adventure && (state.mode === 'playing' || state.mode === 'spinner')) toggleSpinner();
+    }, { passive: false });
+
+    // Tapping the canvas hotbar swaps tools; preventDefault also swallows the
+    // synthetic mousedown, so stray taps never queue an attack on touch
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (!state.adventure || state.mode !== 'playing') return;
+      const rect = canvas.getBoundingClientRect();
+      const t = e.changedTouches[0];
+      const cx = (t.clientX - rect.left) * (canvas.width / rect.width);
+      const cy = (t.clientY - rect.top) * (canvas.height / rect.height);
+      // Mirror the hotbar geometry in renderAdventureUI
+      const slot = 56, gap = 10;
+      const totalW = ADV.hotbar.length * slot + (ADV.hotbar.length - 1) * gap;
+      const hx = (canvas.width - totalW) / 2;
+      const hy = canvas.height - slot - 16;
+      if (cy < hy - 6 || cy > hy + slot + 6) return;
+      ADV.hotbar.forEach((tool, i) => {
+        const x = hx + i * (slot + gap);
+        if (cx >= x - 3 && cx <= x + slot + 3) player.tool = tool;
+      });
+    }, { passive: false });
+  }
+  initTouchUI();
+
   // ---------- Audio (synthesized SFX + looping BGM) ----------
   const audio = { ctx: null };
 
@@ -742,6 +851,7 @@
     state.waveState = 'intermission';
     state.waveTimer = 2;
     state.mode = 'playing';
+    setTouchAdventureButtons(false);
     updateCamera(0, true);
     runStartedAt = Date.now();
     track('run_start', { mode: 'survival' });
@@ -924,6 +1034,7 @@
     }
     state.score = 0;
     state.mode = 'playing';
+    setTouchAdventureButtons(true);
     updateCamera(0, true);
     runStartedAt = Date.now();
     // events.mode only allows survival/campaign; log the run without one until the DB migrates
@@ -936,6 +1047,7 @@
     state.campaign = { act: 0, wave: 0 };
     player = defaultPlayer();
     state.score = 0;
+    setTouchAdventureButtons(false);
     loadAct(0);
     runStartedAt = Date.now();
     track('run_start', { mode: 'campaign' });
@@ -1593,9 +1705,9 @@
       return;
     }
 
-    // Movement
-    let dx = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
-    let dy = (keys.KeyS || keys.ArrowDown ? 1 : 0) - (keys.KeyW || keys.ArrowUp ? 1 : 0);
+    // Movement (keyboard + virtual joystick feed the same vector)
+    let dx = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + touchVec.x;
+    let dy = (keys.KeyS || keys.ArrowDown ? 1 : 0) - (keys.KeyW || keys.ArrowUp ? 1 : 0) + touchVec.y;
     if (dx || dy) {
       const len = Math.hypot(dx, dy);
       const mvx = dx / len * p.speed * dt, mvy = dy / len * p.speed * dt;
@@ -3012,10 +3124,11 @@
     });
     ctx.globalAlpha = 1;
 
-    // Minimap (bottom-left): static islands/bridges + live player & node dots
+    // Minimap: static islands/bridges + live player & node dots. Bottom-left
+    // normally; top-left on touch devices, where the joystick owns that corner
     if (minimapCanvas) {
       const mmW = 168, mmH = mmW * (MAP_H / MAP_W);
-      const mmx = 20, mmy = canvas.height - mmH - 20;
+      const mmx = 20, mmy = IS_TOUCH ? 20 : canvas.height - mmH - 20;
       ctx.fillStyle = '#3a2731';
       roundRect(mmx - 5, mmy - 5, mmW + 10, mmH + 10, 8);
       ctx.fill();

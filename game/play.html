@@ -13,6 +13,18 @@
   <div id="game-wrap">
     <canvas id="game" width="1280" height="768"></canvas>
 
+    <!-- Touch controls: revealed on touch devices only (game.js), sits UNDER
+         the menu overlays so every panel still covers and blocks it -->
+    <div id="touch-ui" class="hidden">
+      <div id="joystick"><div id="joystick-stick"></div></div>
+      <button id="touch-act" aria-label="Attack / work / talk">&#9876;</button>
+      <div id="touch-sys">
+        <button id="touch-pause" aria-label="Pause">&#9776;</button>
+        <button id="touch-ledger" class="hidden" aria-label="Kingdom ledger">I</button>
+        <button id="touch-wheel" class="hidden" aria-label="Wheel of fortune">O</button>
+      </div>
+    </div>
+
     <!-- Start screen -->
     <div id="start-screen" class="overlay">
       <div class="panel">
