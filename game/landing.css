@@ -752,6 +752,97 @@ h2 {
   margin: 0 auto 36px;
 }
 
+/* ---------- Docs / player handbook ---------- */
+
+.docs-main {
+  background: var(--fade);
+  padding: 10px 0 30px;
+}
+
+.docs-wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  gap: 26px;
+}
+
+/* Same chunky cream card language as the landing feature cards */
+.docs-card {
+  background: var(--cream);
+  border: 6px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.35);
+  padding: 30px 34px;
+}
+
+.docs-card h2 {
+  font-size: 14px;
+  color: var(--wood);
+  text-shadow: none;
+  margin-bottom: 18px;
+}
+
+.docs-card h2 .docs-num {
+  color: var(--gold);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+  margin-right: 10px;
+}
+
+.docs-card p,
+.docs-card li {
+  font-size: 10px;
+  line-height: 2.2;
+  color: #6d5440;
+}
+
+.docs-card p + p,
+.docs-card ul + p,
+.docs-card p + ul { margin-top: 12px; }
+
+.docs-card ul { list-style: none; }
+
+.docs-card li {
+  padding-left: 20px;
+  position: relative;
+}
+
+.docs-card li::before {
+  content: '\00BB';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+}
+
+.docs-card strong { color: var(--wood); }
+
+.docs-card a { color: #8a5a3b; }
+
+/* Keyboard caps for the controls list */
+.key {
+  display: inline-block;
+  font-size: 9px;
+  line-height: 1;
+  background: var(--wood);
+  color: var(--cream);
+  border-radius: 6px;
+  padding: 5px 8px 6px;
+  margin: 0 2px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}
+
+.docs-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 30px;
+}
+
+@media (max-width: 700px) {
+  .docs-cols { grid-template-columns: 1fr; }
+  .docs-card { padding: 24px 20px; }
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1040px) {
