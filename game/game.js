@@ -918,7 +918,9 @@
       wood: a.wood, gold: a.gold, meat: a.meat, skills: a.skills, daily: a.daily,
       cosmetics: a.cosmetics, npcQuests: a.npcQuests, spinnerLastFree: a.spinnerLastFree,
       plots: a.plots, storyBounties: a.storyBounties, gatesSeen: a.gatesSeen,
+      savedAt: Date.now(),   // last-write-wins stamp for the cloud mirror
     }));
+    queueCloudPush();
   }
 
   // Combat runs bank their earnings straight into the save — state.adventure
@@ -3408,7 +3410,8 @@
       if (!res.ok) throw new Error(data.error || `auth failed (${res.status})`);
 
       setSession(data);
-      checkCrest();   // async holdings check; UI updates when it lands
+      checkCrest();     // async holdings check; UI updates when it lands
+      syncCloudSave();  // pull a fresher kingdom from another device, or push ours
       sfx.pick();
       navigateTo(authReturnTo);
     } catch (err) {
@@ -3451,6 +3454,63 @@
       if (a && !session.user.crest && a.cosmetics.equipped === 'gold') {
         a.cosmetics.equipped = 'blue';
         saveAdventure();
+      }
+    } catch {}
+  }
+
+  // ---------- Cloud save (per-wallet, Supabase `characters` table) ----------
+  // localStorage stays the source of truth; the cloud row is a mirror synced
+  // last-write-wins via the savedAt stamp inside the save itself. Everything
+  // is fire-and-forget: offline play (or an unmigrated DB) just skips silently.
+  // Table + RLS setup: docs/cloud-save-setup.md
+  let cloudPushTimer = null;
+
+  function queueCloudPush() {
+    if (!lbEnabled || !session) return;
+    clearTimeout(cloudPushTimer);
+    cloudPushTimer = setTimeout(pushCloudSave, 2500); // saves burst during play
+  }
+
+  async function pushCloudSave() {
+    try {
+      const token = await freshAccessToken();
+      if (!token) return;
+      const raw = localStorage.getItem(ADV_SAVE_KEY);
+      if (!raw) return;
+      await fetch(`${LB_CFG.supabaseUrl}/rest/v1/characters`, {
+        method: 'POST',
+        headers: {
+          ...lbHeaders(),
+          Authorization: `Bearer ${token}`,
+          Prefer: 'resolution=merge-duplicates', // upsert on the user_id PK
+        },
+        body: JSON.stringify({ user_id: session.user.id, data: JSON.parse(raw) }),
+      });
+    } catch {}
+  }
+
+  async function syncCloudSave() {
+    if (!lbEnabled || !session) return;
+    try {
+      const token = await freshAccessToken();
+      if (!token) return;
+      const res = await fetch(
+        `${LB_CFG.supabaseUrl}/rest/v1/characters?user_id=eq.${session.user.id}&select=data`,
+        { headers: { ...lbHeaders(), Authorization: `Bearer ${token}` } },
+      );
+      if (!res.ok) return;
+      const rows = await res.json();
+      const cloud = rows[0] && rows[0].data;
+      let local = null;
+      try { local = JSON.parse(localStorage.getItem(ADV_SAVE_KEY)); } catch {}
+      const cloudAt = (cloud && cloud.savedAt) || 0;
+      const localAt = (local && local.savedAt) || 0;
+      if (cloud && cloudAt > localAt && !state.adventure) {
+        // Played elsewhere more recently — adopt the cloud kingdom. Never
+        // mid-session: an active isle is by definition the freshest state.
+        localStorage.setItem(ADV_SAVE_KEY, JSON.stringify(cloud));
+      } else if (local && localAt > cloudAt) {
+        pushCloudSave();
       }
     } catch {}
   }
@@ -3619,7 +3679,10 @@
     }
 
     updateAuthUI();
-    if (session) checkCrest();   // holdings may have changed since last visit
+    if (session) {
+      checkCrest();      // holdings may have changed since last visit
+      syncCloudSave();   // adopt a fresher save from another device
+    }
     track('session_start');
   }
 
@@ -3746,6 +3809,8 @@
         }
         saveAdventure();
       },
+      syncCloud: syncCloudSave,
+      pushCloud: pushCloudSave,
     };
     Object.defineProperty(window.__ts, 'player', { get: () => player });
     Object.defineProperty(window.__ts, 'enemies', { get: () => enemies });

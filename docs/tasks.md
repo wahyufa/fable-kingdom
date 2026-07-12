@@ -269,6 +269,12 @@ Issued at: ..."`, sends to Edge Function, stores session
 - [x] Verified via agent-browser: hero + nav render, cards 02/03 (keycaps inline in prose) and 07/08 (links, gold bullets) all readable, clicking DOCS from the landing nav lands on `/docs` with all 8 cards present, no console errors
 - Note: built through a temporary platform outage that blocked all write tools for a stretch — content was staged read-only and applied once tooling recovered
 
+### Cloud save — ADVENTURE stage (c) complete (v37)
+- [x] **Per-wallet mirror**: every `saveAdventure()` stamps `savedAt` and debounce-pushes (2.5 s) the full save JSON to `public.characters` (upsert on the `user_id` PK via `Prefer: resolution=merge-duplicates`); at boot with a session and right after wallet connect, `syncCloudSave()` pulls and resolves **last-write-wins** — cloud newer + not mid-isle → local replaced; local newer → pushed. All fire-and-forget: logged out, offline, or unmigrated DB skips silently (localStorage stays the gameplay source of truth)
+- [x] RLS owner-only table migration + verification steps in docs/cloud-save-setup.md (depends on evm-auth being deployed); `__ts.syncCloud`/`__ts.pushCloud` debug hooks for testing
+- [x] Verified with a mocked backend: cloud-newer pull replaced the local save (gold 5→777, no push), local-newer sync pushed the right body (user_id + data), playing (give gold → save) fired exactly one debounced POST with the updated save + savedAt, and logged-out play produced zero cloud traffic; console clean
+- Honest limits recorded in the setup doc: LWW no-merge, client-trusted data (fair-play validation still a $FADOM prerequisite), sync applies at the start screen only
+
 ### Mobile touch controls (v36)
 - [x] **Virtual joystick** (bottom-left, HTML overlay at z-index 5 — every menu overlay at z-10 automatically covers/blocks it): touch-tracked by finger identifier so a second touch can't steal the stick, 0.22 dead zone, feeds `touchVec` straight into the same movement vector as WASD in `updatePlayer`
 - [x] **Action button** (bottom-right ⚔): mirrors Space — tap = act/talk (advances dialog too), hold = keep working via `keys.Space`; system row up top: ☰ pause + I/O ledger/wheel shortcuts (I/O shown only on the isles, toggled by the three mode starters)
