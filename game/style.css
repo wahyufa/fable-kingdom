@@ -95,23 +95,6 @@ canvas {
   line-height: 1.9;
 }
 
-/* Homestead teaser — the mode picker is gone (PLAY drops into the isles),
-   so the "coming soon" note lives on the start screen instead */
-.soon-line {
-  max-width: 420px;
-  margin: 18px auto 0;
-  font-size: 9px;
-  line-height: 1.8;
-  color: rgba(58, 39, 49, 0.7);
-}
-
-.soon-line .mode-soon-badge {
-  position: static;
-  display: inline-block;
-  margin-right: 6px;
-  vertical-align: middle;
-}
-
 .btn {
   font-family: var(--font-pixel);
   font-size: 16px;
@@ -130,6 +113,14 @@ canvas {
 .btn:active {
   transform: translateY(5px);
   box-shadow: 0 0 0 var(--color-wood-dark);
+}
+
+/* War spoils banked to the kingdom, shown on the end-of-run screens */
+.panel .spoils {
+  font-size: 10px;
+  color: #4e8f43;
+  margin: 6px 0 14px;
+  min-height: 12px;
 }
 
 .panel .best {
@@ -517,6 +508,15 @@ canvas {
 .lb-list .lb-rank { width: 34px; color: var(--color-gold); text-shadow: 1px 1px 0 var(--color-wood-dark); }
 .lb-list .lb-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lb-list .lb-score { color: #7a5c44; }
+
+/* Knight's Crest — $FADOM holder flair (leaderboard rows + shop lock) */
+.lb-crest {
+  color: var(--color-gold);
+  text-shadow: 1px 1px 0 var(--color-wood-dark);
+  margin-right: 6px;
+}
+
+.crest-lock { color: #b08d3e; }
 
 .lb-list .lb-status {
   display: block;

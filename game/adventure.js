@@ -152,6 +152,10 @@ window.ADVENTURE = {
       { id: 'red',    name: 'EMBER RED',    cost: 150 },
       { id: 'purple', name: 'TWILIGHT',     cost: 150 },
       { id: 'black',  name: 'SHADOWED',     cost: 250 },
+      // Knight's Crest exclusive: not buyable — unlocked by holding $FADOM
+      // (crest comes from the server, see verify-holdings). Hidden entirely
+      // while the token feature is unconfigured.
+      { id: 'gold',   name: 'GILDED',       cost: 0, crest: true },
     ],
   },
   // Small flat chance of a bonus "lucky find" on any harvest — on top of (not
@@ -172,6 +176,14 @@ window.ADVENTURE = {
       { type: 'v2_tower',  name: 'WATCHTOWER', wood: 60,  gold: 90,  buildSecs: 240 },
       { type: 'v2_castle', name: 'KEEP',       wood: 140, gold: 220, buildSecs: 600 },
     ],
+  },
+  // Combat pays the kingdom: Survival banks spoils per completed wave, Story
+  // acts each pay a one-time gold bounty (replays never pay twice).
+  spoils: {
+    survivalGoldPerWave: 3,
+    survivalWoodPerWave: 2,
+    actBountyGold: 30,
+    campaignBountyGold: 120,   // one-time, on finishing all six acts
   },
   // Free spin every UTC day; paid spin costs gold. Prize weights are relative
   // (bigger weight = more common). Amounts are per-resource ranges.

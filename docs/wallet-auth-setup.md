@@ -1,25 +1,34 @@
-# Wallet Auth Setup (Solana)
+# Wallet Auth Setup (Robinhood Chain / EVM)
 
-Leaderboard submission is gated by **Solana wallet sign-in** (Sign In With Solana
-pattern). Playing the game never requires a wallet — only submitting a score
-does. Players sign a short message with Phantom/Solflare/Backpack; a Supabase
+Leaderboard submission is gated by **EVM wallet sign-in on Robinhood Chain**.
+Playing the game never requires a wallet — only submitting a score does.
+Players sign a short message with MetaMask/Rabby/Coinbase Wallet; a Supabase
 Edge Function verifies the signature and mints a session JWT.
+
+> **History:** the game originally used Solana sign-in (`solana-auth`
+> function, kept in the repo for reference). It was replaced by `evm-auth`
+> when the project moved to Robinhood Chain — an Arbitrum Orbit L2 with ETH
+> gas, mainnet live since 2026-07-01 (chainId 4663 / `0x1237`, public RPC
+> `https://rpc.mainnet.chain.robinhood.com`, explorer
+> `https://robinhoodchain.blockscout.com`). Old Solana wallet accounts remain
+> in Supabase but can no longer be signed into.
 
 ## Prerequisites
 
 - The base leaderboard tables + RLS from
   [leaderboard-setup.md](./leaderboard-setup.md) (run that migration first).
 - [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started)
-  installed locally for deploying Edge Functions.
+  installed locally for deploying Edge Functions (`npx supabase` works too).
 
 ## 1. Set JWT secret env var
 
 The Edge Function signs sessions with your project's JWT secret. Get it from
 **Project Settings → API → JWT Settings → JWT Secret** and store it as a
-function secret:
+function secret (already done if solana-auth was deployed before — the same
+secret is shared):
 
 ```bash
-supabase secrets set JWT_SECRET="paste the secret here"
+npx supabase secrets set JWT_SECRET="paste the secret here"
 ```
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically.
@@ -29,8 +38,9 @@ supabase secrets set JWT_SECRET="paste the secret here"
 From the repo root:
 
 ```bash
-supabase link --project-ref pzhupderkpmbufvcznqf   # one time
-supabase functions deploy solana-auth --no-verify-jwt
+npx supabase login                                      # one time, opens browser
+npx supabase link --project-ref pzhupderkpmbufvcznqf    # one time
+npx supabase functions deploy evm-auth --no-verify-jwt
 ```
 
 `--no-verify-jwt` is required because this function is what *issues* the JWT —
@@ -39,7 +49,7 @@ there's no incoming caller token to verify against.
 ## 3. Verify it's live
 
 ```bash
-curl -i https://YOUR-PROJECT-REF.supabase.co/functions/v1/solana-auth \
+curl -i https://YOUR-PROJECT-REF.supabase.co/functions/v1/evm-auth \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -50,8 +60,10 @@ HTTP 404 means the function didn't deploy.
 ## 4. Try it in the browser
 
 Open `play.html`. The start screen should show a **CONNECT WALLET** button.
-Click it, optionally type a display name, hit CONNECT WALLET — your wallet
-popup signs a message, the start screen now shows `CONNECTED: YOUR_NAME`.
+Click it, optionally type a display name, hit CONNECT WALLET — the wallet asks
+to connect, offers to add/switch to Robinhood Chain (declining is fine, the
+signature is chain-agnostic), then signs a message. The start screen now shows
+`CONNECTED: YOUR_NAME`.
 
 Finish a run and SUBMIT SCORE works without any further prompts.
 
@@ -60,14 +72,16 @@ Finish a run and SUBMIT SCORE works without any further prompts.
 1. Client builds a message:
    ```
    Sign in to Fable Kingdom
-   Wallet: <publicKey>
+   Wallet: <0x address, lowercase>
    Issued at: <ISO timestamp>
    ```
-2. The wallet signs it with Ed25519. Client POSTs `{wallet, message, signature,
-   displayName}` to the Edge Function.
-3. Function verifies the signature with tweetnacl, checks the message contains
-   the wallet address and a fresh timestamp (±5 min), upserts a Supabase user
-   with synthetic email `<wallet>@wallet.fablekingdom` and metadata
+2. The wallet signs it with `personal_sign` (EIP-191). Client POSTs
+   `{wallet, message, signature, displayName}` to the Edge Function.
+3. Function keccak-hashes the prefixed message, recovers the signer address
+   with secp256k1 ecrecover (@noble/curves — no RPC call needed), checks it
+   matches the claimed wallet, checks the message contains the wallet address
+   and a fresh timestamp (±5 min), upserts a Supabase user with synthetic
+   email `<0xwallet>@wallet.fablekingdom.app` and metadata
    `{ wallet_address, display_name }`, and returns a signed access token (1 h).
 4. Client stores the token. PostgREST honors it via RLS so the existing
    "authenticated insert own" policy on `scores` works unchanged.
@@ -79,7 +93,10 @@ Finish a run and SUBMIT SCORE works without any further prompts.
 - Sessions don't auto-refresh; players reconnect once an hour. That's a small
   UX cost but means a stolen access token can't be silently extended.
 - Display name is editable: reconnecting with a new value overwrites it.
-- Each wallet address gets exactly one account.
+- Each wallet address gets exactly one account (addresses are lowercased, so
+  checksum-case variants of the same address share one account).
+- The chain switch/add prompt is cosmetic for auth — signatures prove address
+  ownership regardless of the wallet's active network.
 
 ## Reading analytics (with wallet identity)
 

@@ -151,7 +151,7 @@
   // Pawn tool variants share one naming scheme (idle/run carry + work swing).
   // Cosmetic skins reuse the same scheme with a color prefix (blue = default,
   // un-prefixed, always owned — see ADV.cosmetics.skins).
-  const PAWN_SKINS = ['red', 'purple', 'black'];
+  const PAWN_SKINS = ['red', 'purple', 'black', 'gold'];   // gold = crest-gated GILDED
   for (const t of ['axe', 'pickaxe', 'knife']) {
     SHEETS[`pawn_idle_${t}`]     = { src: `assets/pawn_idle_${t}.png`, frameW: 192, frameH: 192 };
     SHEETS[`pawn_run_${t}`]      = { src: `assets/pawn_run_${t}.png`, frameW: 192, frameH: 192 };
@@ -779,18 +779,25 @@
     try { s = JSON.parse(localStorage.getItem(ADV_SAVE_KEY)) || {}; } catch {}
     const skills = {};
     for (const id of Object.keys(ADV.skills)) skills[id] = (s.skills && s.skills[id]) || 0;
+    const cosmetics = {
+      owned: (s.cosmetics && s.cosmetics.owned) || ['blue'],
+      equipped: (s.cosmetics && s.cosmetics.equipped) || 'blue',
+    };
+    // GILDED is crest-gated — without a verified holder session it reverts
+    if (cosmetics.equipped === 'gold' && !(session && session.user.crest)) {
+      cosmetics.equipped = 'blue';
+    }
     return {
       wood: s.wood || 0, gold: s.gold || 0, meat: s.meat || 0,
       skills,                       // total XP per skill; level derives from the curve
       daily: rollDailies(s.daily),  // re-rolls when the UTC date changed
       notices: [],                  // transient HUD banners (level-ups, quest claims)
-      cosmetics: {
-        owned: (s.cosmetics && s.cosmetics.owned) || ['blue'],
-        equipped: (s.cosmetics && s.cosmetics.equipped) || 'blue',
-      },
+      cosmetics,
       npcQuests: s.npcQuests || {},        // npc id -> true once turned in (one-time only)
       spinnerLastFree: s.spinnerLastFree || 0, // ms timestamp of the last free spin
       plots: s.plots || {},                // plot id -> { type, color, startAt, finishAt, done }
+      storyBounties: s.storyBounties || {},// 'act0'..'act5','campaign' -> true once paid
+      gatesSeen: s.gatesSeen || {},        // role npc id -> true once talked to ("!" marker)
       introT: 7,
     };
   }
@@ -800,8 +807,31 @@
     localStorage.setItem(ADV_SAVE_KEY, JSON.stringify({
       wood: a.wood, gold: a.gold, meat: a.meat, skills: a.skills, daily: a.daily,
       cosmetics: a.cosmetics, npcQuests: a.npcQuests, spinnerLastFree: a.spinnerLastFree,
-      plots: a.plots,
+      plots: a.plots, storyBounties: a.storyBounties, gatesSeen: a.gatesSeen,
     }));
+  }
+
+  // Combat runs bank their earnings straight into the save — state.adventure
+  // is null while fighting, so these go through localStorage directly.
+  function bankSpoils(gold, wood) {
+    if (!gold && !wood) return;
+    let s = {};
+    try { s = JSON.parse(localStorage.getItem(ADV_SAVE_KEY)) || {}; } catch {}
+    s.gold = (s.gold || 0) + gold;
+    s.wood = (s.wood || 0) + wood;
+    localStorage.setItem(ADV_SAVE_KEY, JSON.stringify(s));
+  }
+
+  // One-time story bounty; returns the gold paid (0 when already claimed)
+  function grantStoryBounty(key, gold) {
+    let s = {};
+    try { s = JSON.parse(localStorage.getItem(ADV_SAVE_KEY)) || {}; } catch {}
+    s.storyBounties = s.storyBounties || {};
+    if (s.storyBounties[key]) return 0;
+    s.storyBounties[key] = true;
+    s.gold = (s.gold || 0) + gold;
+    localStorage.setItem(ADV_SAVE_KEY, JSON.stringify(s));
+    return gold;
   }
 
   // Total XP → level, plus progress into the next one (for the ledger bars)
@@ -964,8 +994,11 @@
     state.score += 100;
     state.mode = 'transition';
     sfx.fanfare();
+    // First clear of an act pays a one-time bounty into the kingdom stores
+    const bounty = grantStoryBounty(`act${c.act}`, ADV.spoils.actBountyGold);
+    const sub = `Score: ${state.score}` + (bounty ? ` · +${bounty} GOLD SENT HOME` : '');
     // 1) Victory beat for the act that just ended
-    showBanner(`ACT ${c.act + 1} COMPLETE`, ACTS[c.act].title, `Score: ${state.score}`, 2400, () => {
+    showBanner(`ACT ${c.act + 1} COMPLETE`, ACTS[c.act].title, sub, 2400, () => {
       // 2) Outro dialog, then either the next-act banner or final victory
       beginDialog(ACTS[c.act].outro, () => {
         if (c.act + 1 < ACTS.length) {
@@ -993,6 +1026,9 @@
     state.mode = 'victory';
     document.getElementById('victory-stats').textContent = `Final score: ${state.score}`;
     document.getElementById('victory-best').textContent = saveBest();
+    const bounty = grantStoryBounty('campaign', ADV.spoils.campaignBountyGold);
+    document.getElementById('victory-spoils').textContent =
+      bounty ? `THE KINGDOM CELEBRATES: +${bounty} GOLD` : '';
     submittedThisRun = false;
     prepareSubmitRow('menu-btn');
     track('run_end', {
@@ -1011,6 +1047,17 @@
       ? `Act ${state.campaign.act + 1}: ${ACTS[state.campaign.act].title} — Score ${state.score}`
       : `Wave ${state.wave} — Score ${state.score}`;
     document.getElementById('best-line').textContent = saveBest();
+    // Survival banks war spoils for the kingdom; story pays per-act bounties
+    // in completeAct() instead, so a story defeat sends nothing home
+    let spoilsText = '';
+    if (!state.campaign) {
+      const waves = Math.max(0, state.waveState === 'intermission' ? state.wave : state.wave - 1);
+      const g = waves * ADV.spoils.survivalGoldPerWave;
+      const w = waves * ADV.spoils.survivalWoodPerWave;
+      bankSpoils(g, w);
+      if (g || w) spoilsText = `SPOILS SENT HOME: +${g} GOLD · +${w} WOOD`;
+    }
+    document.getElementById('spoils-line').textContent = spoilsText;
     document.getElementById('restart-btn').textContent = state.campaign ? 'RETRY ACT' : 'PLAY AGAIN';
     submittedThisRun = false;
     prepareSubmitRow('restart-btn');
@@ -1399,9 +1446,17 @@
   function talkToNpc(npc) {
     player.flip = npc.x < player.x;
     // Role NPCs are the hub's doorways: the merchant opens her shop, the
-    // gatekeepers offer a combat mode behind a confirm panel.
-    if (npc.role === 'shop') { openShop(); return; }
-    if (npc.role) { openGate(npc); return; }
+    // gatekeepers offer a combat mode behind a confirm panel. First talk
+    // clears the "!" discovery marker for good.
+    if (npc.role) {
+      if (!state.adventure.gatesSeen[npc.id]) {
+        state.adventure.gatesSeen[npc.id] = true;
+        saveAdventure();
+      }
+      if (npc.role === 'shop') openShop();
+      else openGate(npc);
+      return;
+    }
     const who = { name: npc.name, img: npc.avatar };
     const a = state.adventure;
     const q = npc.quest;
@@ -2152,13 +2207,22 @@
     const a = state.adventure;
     document.getElementById('ledger-shop').innerHTML =
       ADV.cosmetics.skins.map((skin) => {
+        if (skin.crest && !tokenEnabled) return ''; // hidden until $FADOM is configured
         const owned = a.cosmetics.owned.includes(skin.id);
         const equipped = a.cosmetics.equipped === skin.id;
-        const action = equipped
-          ? '<span class="ledger-val">EQUIPPED</span>'
-          : owned
+        let action;
+        if (equipped) {
+          action = '<span class="ledger-val">EQUIPPED</span>';
+        } else if (skin.crest) {
+          // Not for sale — proof of holding is the price
+          action = (session && session.user.crest)
             ? `<button class="btn btn-tiny" data-equip-skin="${skin.id}">EQUIP</button>`
-            : `<button class="btn btn-tiny" data-buy-skin="${skin.id}"${a.gold < skin.cost ? ' disabled' : ''}>BUY ${skin.cost}g</button>`;
+            : '<span class="ledger-val crest-lock">&#9819; HOLD $FADOM</span>';
+        } else if (owned) {
+          action = `<button class="btn btn-tiny" data-equip-skin="${skin.id}">EQUIP</button>`;
+        } else {
+          action = `<button class="btn btn-tiny" data-buy-skin="${skin.id}"${a.gold < skin.cost ? ' disabled' : ''}>BUY ${skin.cost}g</button>`;
+        }
         return `<div class="ledger-row"><span class="ledger-label">${skin.name}</span>${action}</div>`;
       }).join('');
     document.getElementById('shop-funds').textContent = `YOUR GOLD: ${a.gold}`;
@@ -2180,6 +2244,8 @@
       saveAdventure();
       renderShop();
     } else if (equipId) {
+      const skin = ADV.cosmetics.skins.find(s => s.id === equipId);
+      if (skin && skin.crest && !(session && session.user.crest)) return;
       a.cosmetics.equipped = equipId;
       sfx.pick();
       saveAdventure();
@@ -2686,6 +2752,17 @@
     drawShadow(n.x, n.y + 30, 0.62);
     const sheet = `${n.sprite}_idle`;
     drawFrame(sheet, animFrame(sheet, n.animT, 6), n.x, n.y, n.flip);
+    // Undiscovered doorway NPCs bob a "!" so new players can find the modes
+    // that used to sit on the main menu
+    if (n.role && state.adventure && !state.adventure.gatesSeen[n.id]) {
+      const bob = Math.sin(state.time * 4) * 5;
+      ctx.font = '22px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#3a2731';
+      ctx.fillText('!', n.x + 2, n.y - 108 + bob + 2);
+      ctx.fillStyle = '#f2b23a';
+      ctx.fillText('!', n.x, n.y - 108 + bob);
+    }
     if (state.mode === 'playing' && dist(player, n) < 70) {
       ctx.font = '9px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
@@ -3037,6 +3114,8 @@
   // only thing they ever type is a display name. No config = feature hidden.
   const LB_CFG = window.FK_CONFIG || {};
   const lbEnabled = !!(LB_CFG.supabaseUrl && LB_CFG.supabaseAnonKey);
+  // Crest features stay dark until the $FADOM contract address is configured
+  const tokenEnabled = !!(lbEnabled && LB_CFG.token && LB_CFG.token.address);
   const NAME_KEY = 'fableKingdomName';
   const PLAYER_ID_KEY = 'fableKingdomPlayerId';
   let submittedThisRun = false;
@@ -3059,8 +3138,11 @@
   }
 
   async function lbFetchTop(mode) {
+    // `crest` only exists after the token migration runs — request it only
+    // when the feature is on so an unmigrated DB keeps working untouched
+    const cols = tokenEnabled ? 'name,score,wave,player_id,crest' : 'name,score,wave,player_id';
     const url = `${LB_CFG.supabaseUrl}/rest/v1/scores` +
-      `?mode=eq.${mode}&select=name,score,wave,player_id&order=score.desc&limit=100`;
+      `?mode=eq.${mode}&select=${cols}&order=score.desc&limit=100`;
     const res = await fetch(url, { headers: lbHeaders() });
     if (!res.ok) throw new Error(`leaderboard fetch failed (${res.status})`);
     const rows = await res.json();
@@ -3087,7 +3169,7 @@
     if (!res.ok) throw new Error(`submit failed (${res.status})`);
   }
 
-  // ---------- Auth (Solana wallet via Edge Function) ----------
+  // ---------- Auth (EVM wallet on Robinhood Chain via Edge Function) ----------
   // Playing never needs an account; submitting to the leaderboard does.
   // The Edge Function verifies a signed message and issues a Supabase JWT.
   const SESSION_KEY = 'fableKingdomSession';
@@ -3102,6 +3184,7 @@
         email: data.user.email,
         wallet: data.user.user_metadata?.wallet_address || '',
         name: data.user.user_metadata?.display_name || '',
+        crest: !!data.user.user_metadata?.crest,
       },
     } : null;
     if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -3119,7 +3202,7 @@
   }
 
   function shortWallet(w) {
-    return w ? `${w.slice(0, 4)}…${w.slice(-4)}` : '';
+    return w ? `${w.slice(0, 6)}…${w.slice(-4)}` : '';   // 0x1234…abcd
   }
 
   function updateAuthUI() {
@@ -3128,7 +3211,8 @@
     const btn = document.getElementById('auth-btn');
     if (session) {
       const label = session.user.name || shortWallet(session.user.wallet);
-      line.textContent = `CONNECTED: ${label.toUpperCase()}`;
+      const crest = session.user.crest ? '♛ ' : '';   // ♛ for $FADOM holders
+      line.textContent = `CONNECTED: ${crest}${label.toUpperCase()}`;
       btn.textContent = 'DISCONNECT';
     } else {
       line.textContent = '';
@@ -3146,18 +3230,40 @@
     el.style.color = ok ? '#3a7d44' : '#a33b2e';
   }
 
+  // Any EIP-1193 wallet works (MetaMask, Rabby, Coinbase Wallet, ...) — when
+  // several are installed, prefer MetaMask from the multi-provider list.
   function detectWalletProvider() {
-    if (window.phantom?.solana?.isPhantom) return window.phantom.solana;
-    if (window.solana?.isPhantom) return window.solana;
-    if (window.solflare?.isSolflare) return window.solflare;
-    if (window.backpack?.solana) return window.backpack.solana;
-    return null;
+    const eth = window.ethereum;
+    if (!eth) return null;
+    if (Array.isArray(eth.providers)) {
+      return eth.providers.find((p) => p.isMetaMask) || eth.providers[0];
+    }
+    return eth;
+  }
+
+  // Offer to switch (or first add) Robinhood Chain in the player's wallet.
+  // Declining is fine — personal_sign proves the address on any chain, so
+  // this is branding/UX, never a gate.
+  async function ensureRobinhoodChain(provider) {
+    const chain = LB_CFG.chain;
+    if (!chain) return;
+    try {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: chain.chainId }],
+      });
+    } catch (err) {
+      if (err?.code !== 4902) return; // declined or already pending — move on
+      try {
+        await provider.request({ method: 'wallet_addEthereumChain', params: [chain] });
+      } catch {}
+    }
   }
 
   async function connectWallet() {
     const provider = detectWalletProvider();
     if (!provider) {
-      authStatus('NO SOLANA WALLET FOUND. INSTALL PHANTOM, SOLFLARE OR BACKPACK.');
+      authStatus('NO WALLET FOUND. INSTALL METAMASK, RABBY OR COINBASE WALLET.');
       return;
     }
     const displayName = document.getElementById('auth-name').value;
@@ -3167,20 +3273,20 @@
     authStatus('OPEN YOUR WALLET TO APPROVE', true);
 
     try {
-      const resp = await provider.connect();
-      const wallet = (resp.publicKey || provider.publicKey).toString();
+      const accounts = await provider.request({ method: 'eth_requestAccounts' });
+      const wallet = String(accounts[0]).toLowerCase();
+      await ensureRobinhoodChain(provider);
       const message = `Sign in to Fable Kingdom\nWallet: ${wallet}\nIssued at: ${new Date().toISOString()}`;
-      const encoded = new TextEncoder().encode(message);
 
       authStatus('SIGN THE MESSAGE TO VERIFY', true);
-      const signed = await provider.signMessage(encoded, 'utf8');
-      const sigBytes = signed.signature || signed;
-      let bin = '';
-      for (const b of sigBytes) bin += String.fromCharCode(b);
-      const signature = btoa(bin);
+      // personal_sign returns a 65-byte 0x-hex signature
+      const signature = await provider.request({
+        method: 'personal_sign',
+        params: [message, wallet],
+      });
 
       authStatus('VERIFYING...', true);
-      const res = await fetch(`${LB_CFG.supabaseUrl}/functions/v1/solana-auth`, {
+      const res = await fetch(`${LB_CFG.supabaseUrl}/functions/v1/evm-auth`, {
         method: 'POST',
         headers: { apikey: LB_CFG.supabaseAnonKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ wallet, message, signature, displayName }),
@@ -3189,6 +3295,7 @@
       if (!res.ok) throw new Error(data.error || `auth failed (${res.status})`);
 
       setSession(data);
+      checkCrest();   // async holdings check; UI updates when it lands
       sfx.pick();
       navigateTo(authReturnTo);
     } catch (err) {
@@ -3201,8 +3308,38 @@
   }
 
   async function disconnectWallet() {
+    // EIP-1193 has no disconnect — dropping the session is the whole logout
     setSession(null);
-    try { await detectWalletProvider()?.disconnect?.(); } catch {}
+  }
+
+  // Ask the server to re-check $FADOM holdings for the signed-in wallet and
+  // stamp the crest on the account. Fire-and-forget: the crest is cosmetic,
+  // so any failure just leaves the last known state.
+  async function checkCrest() {
+    if (!tokenEnabled || !session) return;
+    try {
+      const res = await fetch(`${LB_CFG.supabaseUrl}/functions/v1/verify-holdings`, {
+        method: 'POST',
+        headers: {
+          apikey: LB_CFG.supabaseAnonKey,
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!session) return; // disconnected while the check was in flight
+      session.user.crest = !!data.crest;
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      updateAuthUI();
+      // Losing the crest un-equips GILDED (kept if simply offline/unverified)
+      const a = state.adventure;
+      if (a && !session.user.crest && a.cosmetics.equipped === 'gold') {
+        a.cosmetics.equipped = 'blue';
+        saveAdventure();
+      }
+    } catch {}
   }
 
   // ---------- Analytics (fire-and-forget event log) ----------
@@ -3240,7 +3377,7 @@
       const label = mode === 'survival' ? 'W' : 'ACT';
       list.innerHTML = rows.map((r, i) =>
         `<li><span class="lb-rank">#${i + 1}</span>` +
-        `<span class="lb-name">${escapeHtml(r.name)}</span>` +
+        `<span class="lb-name">${r.crest ? '<span class="lb-crest" title="$FADOM HOLDER">&#9819;</span>' : ''}${escapeHtml(r.name)}</span>` +
         `<span class="lb-score">${r.score} · ${label}${r.wave ?? '?'}</span></li>`
       ).join('');
     } catch (err) {
@@ -3369,6 +3506,7 @@
     }
 
     updateAuthUI();
+    if (session) checkCrest();   // holdings may have changed since last visit
     track('session_start');
   }
 
@@ -3397,6 +3535,13 @@
     document.getElementById('final-stats').textContent =
       `Wave ${state.wave} — Score ${state.score}`;
     document.getElementById('best-line').textContent = saveBest();
+    // Quitting keeps the spoils too — otherwise dying would pay better
+    const waves = Math.max(0, state.waveState === 'intermission' ? state.wave : state.wave - 1);
+    const g = waves * ADV.spoils.survivalGoldPerWave;
+    const w = waves * ADV.spoils.survivalWoodPerWave;
+    bankSpoils(g, w);
+    document.getElementById('spoils-line').textContent =
+      (g || w) ? `SPOILS SENT HOME: +${g} GOLD · +${w} WOOD` : '';
     document.getElementById('restart-btn').textContent = 'EXIT TO MENU';
     submittedThisRun = false;
     prepareSubmitRow('restart-btn');

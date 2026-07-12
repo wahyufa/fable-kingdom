@@ -32,7 +32,6 @@
           <button id="auth-btn" class="btn btn-stack-item btn-secondary hidden">LOGIN</button>
         </div>
         <p class="hint start-hint">No wallet needed to play.<br />Connect only to join the leaderboard.</p>
-        <p class="soon-line"><span class="mode-soon-badge">SOON</span> HOMESTEAD — rebuild Bluehaven, one quiet kingdom of your own</p>
         <!-- 2 lines via the <br>; width capped under the panel so it won't widen it -->
         <p class="account-line" id="account-line"></p>
       </div>
@@ -42,7 +41,7 @@
     <div id="auth-screen" class="overlay hidden">
       <div class="panel">
         <h1>Connect Wallet</h1>
-        <p class="subtitle">Sign in with Solana to enter the leaderboard.<br />Playing the game never requires a wallet.</p>
+        <p class="subtitle">Sign in with your wallet on Robinhood Chain to enter the leaderboard.<br />Playing the game never requires a wallet.</p>
         <div class="auth-form">
           <input id="auth-name" type="text" maxlength="16" placeholder="DISPLAY NAME (OPTIONAL)" autocomplete="off" />
           <p class="auth-status" id="auth-status"></p>
@@ -74,6 +73,7 @@
         <h1>Defeated!</h1>
         <p class="subtitle" id="final-stats"></p>
         <p class="best" id="best-line"></p>
+        <p class="spoils" id="spoils-line"></p>
         <div class="submit-row hidden" id="submit-row">
           <input id="player-name" type="text" maxlength="16" placeholder="YOUR NAME" autocomplete="off" />
           <button id="submit-btn" class="btn btn-small">SUBMIT SCORE</button>
@@ -93,6 +93,7 @@
         <p class="subtitle">The Banner is home. Bluehaven rises again.</p>
         <p class="subtitle" id="victory-stats"></p>
         <p class="best" id="victory-best"></p>
+        <p class="spoils" id="victory-spoils"></p>
         <button id="menu-btn" class="btn">BACK TO THE ISLES</button>
       </div>
     </div>
