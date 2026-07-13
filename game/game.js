@@ -852,6 +852,7 @@
     state.waveTimer = 2;
     state.mode = 'playing';
     setTouchAdventureButtons(false);
+    leaveIsles();
     updateCamera(0, true);
     runStartedAt = Date.now();
     track('run_start', { mode: 'survival' });
@@ -1037,6 +1038,7 @@
     state.score = 0;
     state.mode = 'playing';
     setTouchAdventureButtons(true);
+    joinIsles();
     updateCamera(0, true);
     runStartedAt = Date.now();
     // events.mode only allows survival/campaign; log the run without one until the DB migrates
@@ -1050,6 +1052,7 @@
     player = defaultPlayer();
     state.score = 0;
     setTouchAdventureButtons(false);
+    leaveIsles();
     loadAct(0);
     runStartedAt = Date.now();
     track('run_start', { mode: 'campaign' });
@@ -1435,6 +1438,8 @@
       updateEffects(dt);
       updateNodes(dt);
       updatePlots();
+      sendPresencePos();
+      updateGhosts(dt);
       for (const n of npcList) n.animT += dt;
       // Announce a new region when the pawn crosses onto a different island
       const reg = regionAt(player.x, player.y + 22);
@@ -2708,6 +2713,9 @@
     }
     for (const b of buildings) drawList.push({ y: b.y, draw: () => drawBuilding(b) });
     for (const n of npcList) drawList.push({ y: n.y, draw: () => drawNpc(n) });
+    if (state.adventure) {
+      for (const g of ghosts.values()) drawList.push({ y: g.y, draw: () => drawGhost(g) });
+    }
     for (const s of sheepList) if (!s.dead) drawList.push({ y: s.y, draw: () => drawSheep(s) });
     for (const e of enemies) drawList.push({ y: e.y, draw: () => drawEnemy(e) });
     if (state.mode !== 'gameover') drawList.push({ y: player.y, draw: drawPlayer });
@@ -3515,6 +3523,120 @@
     } catch {}
   }
 
+  // ---------- Online presence: ghosts of other players on the isles ----------
+  // Players currently roaming the isles see each other as translucent pawns
+  // with name labels — no collision, no interaction, position is broadcast
+  // via Supabase Realtime (presence = roster, broadcast 'pos' = movement).
+  // Position spoofing is possible and harmless: ghosts are purely cosmetic.
+  let sbClient = null;
+  let islesChannel = null;
+  const ghosts = new Map(); // playerId -> { x, y, tx, ty, name, skin, tool, ... }
+  let lastPosSent = 0, lastSentX = 0, lastSentY = 0;
+
+  const presenceReady = () => lbEnabled && typeof window.supabase !== 'undefined';
+
+  const ghostName = () =>
+    (session && session.user.name ? session.user.name : 'TRAVELER').toUpperCase().slice(0, 14);
+
+  function joinIsles() {
+    if (!presenceReady() || islesChannel) return;
+    if (!sbClient) {
+      // Realtime only — the game mints its own JWTs, so GoTrue stays off
+      sbClient = window.supabase.createClient(LB_CFG.supabaseUrl, LB_CFG.supabaseAnonKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+    }
+    const me = lbPlayerId();
+    islesChannel = sbClient.channel('isles', {
+      config: { presence: { key: me }, broadcast: { self: false } },
+    });
+    islesChannel
+      .on('presence', { event: 'leave' }, ({ key }) => { ghosts.delete(key); })
+      .on('broadcast', { event: 'pos' }, ({ payload }) => {
+        if (!payload || payload.id === me) return;
+        let g = ghosts.get(payload.id);
+        if (!g) {
+          g = { x: payload.x, y: payload.y, animT: rand(0, 2) };
+          ghosts.set(payload.id, g);
+        }
+        g.tx = payload.x;
+        g.ty = payload.y;
+        g.flip = !!payload.flip;
+        g.tool = payload.tool || 'axe';
+        g.skin = payload.skin || 'blue';
+        g.name = payload.name || 'TRAVELER';
+        g.lastSeen = Date.now();
+      })
+      .subscribe((status) => {
+        // Track a tiny roster entry so leaves fire; positions go via broadcast
+        if (status === 'SUBSCRIBED') islesChannel.track({ name: ghostName() });
+      });
+  }
+
+  function leaveIsles() {
+    if (!islesChannel) return;
+    try { sbClient.removeChannel(islesChannel); } catch {}
+    islesChannel = null;
+    ghosts.clear();
+  }
+
+  // Called every adventure frame; throttles itself (150 ms while moving,
+  // 2 s idle heartbeat so newcomers see standing players quickly)
+  function sendPresencePos() {
+    if (!islesChannel || !state.adventure) return;
+    const now = Date.now();
+    if (now - lastPosSent < 150) return;
+    const moved = Math.abs(player.x - lastSentX) > 2 || Math.abs(player.y - lastSentY) > 2;
+    if (!moved && now - lastPosSent < 2000) return;
+    lastPosSent = now;
+    lastSentX = player.x;
+    lastSentY = player.y;
+    islesChannel.send({
+      type: 'broadcast',
+      event: 'pos',
+      payload: {
+        id: lbPlayerId(),
+        x: Math.round(player.x), y: Math.round(player.y),
+        flip: player.flip, tool: player.tool,
+        skin: state.adventure.cosmetics.equipped,
+        name: ghostName(),
+      },
+    });
+  }
+
+  function updateGhosts(dt) {
+    const now = Date.now();
+    for (const [id, g] of ghosts) {
+      if (now - (g.lastSeen || 0) > 10000) { ghosts.delete(id); continue; }
+      const dx = (g.tx ?? g.x) - g.x, dy = (g.ty ?? g.y) - g.y;
+      const d = Math.hypot(dx, dy);
+      g.moving = d > 3;
+      if (d > 400) { g.x = g.tx; g.y = g.ty; } // teleport (bridge, respawn) — snap
+      else if (d > 0.5) {
+        const k = Math.min(1, dt * 10);        // smooth toward the reported spot
+        g.x += dx * k;
+        g.y += dy * k;
+      }
+      g.animT += dt;
+    }
+  }
+
+  function drawGhost(g) {
+    const prefix = g.skin && g.skin !== 'blue' ? `${g.skin}_` : '';
+    const sheet = `${prefix}pawn_${g.moving ? 'run' : 'idle'}_${g.tool || 'axe'}`;
+    if (!SHEETS[sheet]) return;
+    ctx.globalAlpha = 0.8;
+    drawShadow(g.x, g.y + 30, 0.62);
+    drawFrame(sheet, animFrame(sheet, g.animT, g.moving ? 10 : 6), g.x, g.y, g.flip);
+    ctx.globalAlpha = 1;
+    ctx.font = '8px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#3a2731';
+    ctx.fillText(g.name, g.x + 1, g.y - 78 + 1);
+    ctx.fillStyle = '#cfe8ff';
+    ctx.fillText(g.name, g.x, g.y - 78);
+  }
+
   // ---------- Analytics (fire-and-forget event log) ----------
   let runStartedAt = 0;
 
@@ -3811,7 +3933,9 @@
       },
       syncCloud: syncCloudSave,
       pushCloud: pushCloudSave,
+      presence: () => ({ joined: !!islesChannel, ghosts: ghosts.size }),
     };
+    Object.defineProperty(window.__ts, 'ghosts', { get: () => ghosts });
     Object.defineProperty(window.__ts, 'player', { get: () => player });
     Object.defineProperty(window.__ts, 'enemies', { get: () => enemies });
     Object.defineProperty(window.__ts, 'buildings', { get: () => buildings });
