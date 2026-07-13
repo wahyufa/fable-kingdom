@@ -1,0 +1,251 @@
+/* Fable Kingdom docs — GitBook-style: fixed sidebar nav, light reading
+   theme, clean sans body. Intentionally different from the landing pages
+   (its own stylesheet); only the brand logo keeps the pixel font. */
+
+:root {
+  --bg: #ffffff;
+  --bg-side: #fbfaf8;
+  --text: #1f2328;
+  --text-soft: #57606a;
+  --border: #e7e2d9;
+  --brand: #8a5a3b;          /* warm wood-brown links/accents */
+  --brand-soft: rgba(243, 179, 64, 0.14);
+  --gold: #b07818;
+  --font-pixel: 'Press Start 2P', 'Courier New', monospace;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --side-w: 280px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---------- Sidebar ---------- */
+
+.side {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--side-w);
+  background: var(--bg-side);
+  border-right: 1px solid var(--border);
+  padding: 28px 18px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.side-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+
+.side-brand img { height: 34px; display: block; }
+
+.side-brand span {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.side-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  padding: 0 10px;
+  margin-bottom: 6px;
+}
+
+.side-nav { display: flex; flex-direction: column; gap: 2px; }
+
+.side-nav a {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.side-nav a:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.side-nav a.active {
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.side-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+
+.side-foot a { font-size: 13px; color: var(--text-soft); padding: 0 10px; }
+.side-foot a:hover { color: var(--brand); }
+
+.side-play {
+  display: block;
+  text-align: center;
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: #fff !important;
+  background: #1f2328;
+  border-radius: 10px;
+  padding: 13px 10px;
+  margin: 4px 6px 0;
+}
+
+.side-play:hover { background: #3a2731; text-decoration: none !important; }
+
+/* ---------- Content ---------- */
+
+.doc {
+  margin-left: var(--side-w);
+  padding: 56px 48px 96px;
+  max-width: calc(var(--side-w) + 800px);
+}
+
+.doc-inner { max-width: 720px; margin: 0 auto; }
+
+.doc-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.doc h1 {
+  font-size: 34px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.doc-lead { font-size: 17px; color: var(--text-soft); }
+
+.doc section {
+  margin-top: 52px;
+  padding-top: 8px;
+}
+
+.doc h2 {
+  font-size: 23px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+
+.doc h3 { font-size: 17px; margin: 26px 0 8px; }
+
+.doc p + p { margin-top: 12px; }
+
+.doc ul { padding-left: 22px; margin: 12px 0; }
+.doc li { margin: 6px 0; }
+.doc li::marker { color: var(--gold); }
+
+.doc strong { font-weight: 650; }
+
+/* Keycaps */
+kbd {
+  display: inline-block;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1;
+  color: var(--text);
+  background: #f6f8fa;
+  border: 1px solid var(--border);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  padding: 4px 7px;
+  margin: 0 1px;
+  white-space: nowrap;
+}
+
+/* Tables (costs, prices) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 14.5px;
+}
+
+th, td {
+  text-align: left;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+}
+
+th {
+  background: var(--bg-side);
+  font-weight: 650;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* GitBook-style callouts */
+.hint {
+  display: flex;
+  gap: 12px;
+  margin: 18px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 8px;
+  background: var(--brand-soft);
+  font-size: 14.5px;
+}
+
+.hint.warn { border-left-color: #d29922; background: #fff8ec; }
+
+.hint-icon { flex: none; font-size: 16px; line-height: 1.6; }
+
+/* Prev/next-ish footer */
+.doc-foot {
+  margin-top: 64px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 13.5px;
+  color: var(--text-soft);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .side {
+    position: static;
+    width: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .side-nav { flex-direction: row; flex-wrap: wrap; }
+  .side-foot { margin-top: 6px; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .side-play { margin: 0; padding: 10px 16px; }
+  .doc { margin-left: 0; padding: 32px 20px 72px; max-width: none; }
+}

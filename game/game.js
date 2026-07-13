@@ -2331,7 +2331,7 @@
           // Not for sale — proof of holding is the price
           action = (session && session.user.crest)
             ? `<button class="btn btn-tiny" data-equip-skin="${skin.id}">EQUIP</button>`
-            : '<span class="ledger-val crest-lock">&#9819; HOLD $FADOM</span>';
+            : '<span class="ledger-val crest-lock">&#9819; HOLDERS ONLY</span>';
         } else if (owned) {
           action = `<button class="btn btn-tiny" data-equip-skin="${skin.id}">EQUIP</button>`;
         } else {
@@ -3550,7 +3550,7 @@
       const label = mode === 'survival' ? 'W' : 'ACT';
       list.innerHTML = rows.map((r, i) =>
         `<li><span class="lb-rank">#${i + 1}</span>` +
-        `<span class="lb-name">${r.crest ? '<span class="lb-crest" title="$FADOM HOLDER">&#9819;</span>' : ''}${escapeHtml(r.name)}</span>` +
+        `<span class="lb-name">${r.crest ? '<span class="lb-crest" title="TOKEN HOLDER">&#9819;</span>' : ''}${escapeHtml(r.name)}</span>` +
         `<span class="lb-score">${r.score} · ${label}${r.wave ?? '?'}</span></li>`
       ).join('');
     } catch (err) {

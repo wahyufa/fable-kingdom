@@ -242,38 +242,6 @@ h2 {
   margin-bottom: 36px;
 }
 
-/* Glassy contract-address chip under the PLAY button */
-.hero-ca {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 22px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgb(0 0 0 / 23%);
-  backdrop-filter: blur(41px);
-  -webkit-backdrop-filter: blur(41px);
-}
-
-.hero-ca-label {
-  font-family: var(--font-pixel);
-  font-size: 9px;
-  letter-spacing: 1px;
-  color: #fff;
-  text-shadow: 2px 2px 0 rgba(20, 40, 24, 0.75);
-}
-
-.hero-ca-value {
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  font-weight: bold;
-  color: #fff;
-  text-shadow: 2px 2px 0 rgba(20, 40, 24, 0.75);
-  word-break: break-all;
-}
-
-.hero-ca-value.is-live { cursor: pointer; }
-
 /* ---------- Features ---------- */
 
 .features {
@@ -356,8 +324,6 @@ h2 {
 
 .footer .x-link:hover,
 .footer .tg-link:hover { color: #fff; }
-
-.footer .ca-line { color: rgba(244, 231, 208, 0.65); }
 
 /* ---------- Lore page ---------- */
 
@@ -750,97 +716,6 @@ h2 {
 .roadmap-cta .roadmap-intro {
   max-width: 520px;
   margin: 0 auto 36px;
-}
-
-/* ---------- Docs / player handbook ---------- */
-
-.docs-main {
-  background: var(--fade);
-  padding: 10px 0 30px;
-}
-
-.docs-wrap {
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: grid;
-  gap: 26px;
-}
-
-/* Same chunky cream card language as the landing feature cards */
-.docs-card {
-  background: var(--cream);
-  border: 6px solid var(--wood);
-  border-radius: var(--radius);
-  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.35);
-  padding: 30px 34px;
-}
-
-.docs-card h2 {
-  font-size: 14px;
-  color: var(--wood);
-  text-shadow: none;
-  margin-bottom: 18px;
-}
-
-.docs-card h2 .docs-num {
-  color: var(--gold);
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
-  margin-right: 10px;
-}
-
-.docs-card p,
-.docs-card li {
-  font-size: 10px;
-  line-height: 2.2;
-  color: #6d5440;
-}
-
-.docs-card p + p,
-.docs-card ul + p,
-.docs-card p + ul { margin-top: 12px; }
-
-.docs-card ul { list-style: none; }
-
-.docs-card li {
-  padding-left: 20px;
-  position: relative;
-}
-
-.docs-card li::before {
-  content: '\00BB';
-  position: absolute;
-  left: 0;
-  color: var(--gold);
-}
-
-.docs-card strong { color: var(--wood); }
-
-.docs-card a { color: #8a5a3b; }
-
-/* Keyboard caps for the controls list */
-.key {
-  display: inline-block;
-  font-size: 9px;
-  line-height: 1;
-  background: var(--wood);
-  color: var(--cream);
-  border-radius: 6px;
-  padding: 5px 8px 6px;
-  margin: 0 2px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
-  white-space: nowrap;
-}
-
-.docs-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 30px;
-}
-
-@media (max-width: 700px) {
-  .docs-cols { grid-template-columns: 1fr; }
-  .docs-card { padding: 24px 20px; }
 }
 
 /* ---------- Responsive ---------- */
