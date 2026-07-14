@@ -437,11 +437,55 @@
 
   const sfxOn = () => audioSettings.sfx && !audioSettings.muted;
 
-  // BGM is optional: if assets/audio/bgm.mp3 is missing, the game stays silent
-  let bgm = new Audio('assets/audio/bgm.mp3');
+  // BGM is optional: if the track fails to load, the game stays silent.
+  // One Audio element whose .src swaps per mode — fades out, swaps, fades
+  // back in, rather than a hard cut. 'default' covers Story + menus.
+  const BGM_TRACKS = {
+    default: 'assets/audio/bgm.mp3',
+    adventure: 'assets/audio/bgm_adventure.mp3',
+    survival: 'assets/audio/bgm_survival.mp3',
+  };
+  const BGM_VOLUME = 0.35;
+  let bgm = new Audio(BGM_TRACKS.default);
   bgm.loop = true;
-  bgm.volume = 0.35;
+  bgm.volume = BGM_VOLUME;
   bgm.onerror = () => { bgm = null; };
+  let bgmTrack = 'default';
+  let bgmFadeTimer = null;
+
+  function fadeBgmTo(vol, ms, onDone) {
+    if (!bgm) { onDone && onDone(); return; }
+    clearInterval(bgmFadeTimer);
+    const steps = Math.max(1, Math.round(ms / 40));
+    const start = bgm.volume;
+    const step = (vol - start) / steps;
+    let i = 0;
+    bgmFadeTimer = setInterval(() => {
+      i++;
+      if (bgm) bgm.volume = Math.min(1, Math.max(0, start + step * i));
+      if (i >= steps) {
+        clearInterval(bgmFadeTimer);
+        if (bgm) bgm.volume = vol;
+        onDone && onDone();
+      }
+    }, 40);
+  }
+
+  // Switches the looping track for the mode being entered. No-ops if
+  // already on that track or if bgm failed to load entirely.
+  function setBgmTrack(key) {
+    if (!bgm || bgmTrack === key) return;
+    bgmTrack = key;
+    const wasPaused = bgm.paused;
+    fadeBgmTo(0, 300, () => {
+      if (!bgm) return;
+      bgm.pause();
+      bgm.src = BGM_TRACKS[key] || BGM_TRACKS.default;
+      bgm.currentTime = 0;
+      if (!wasPaused) bgm.play().catch(() => {});
+      fadeBgmTo(BGM_VOLUME, 500);
+    });
+  }
 
   function syncAudio() {
     localStorage.setItem(AUDIO_KEY, JSON.stringify(audioSettings));
@@ -734,13 +778,17 @@
 
   let player, enemies, arrows, bombs, corpses, pickups, effects, sheepList, decors, buildings, clouds, npcList, plotList;
 
+  // Named so the Survival upgrade caps below can stay relative to these
+  // instead of duplicating magic numbers that could drift out of sync.
+  const BASE_SPEED = 230, BASE_DMG = 35, BASE_MAX_HP = 100, BASE_ATK_DUR = 4 / 12;
+
   function defaultPlayer() {
     return {
       x: W / 2, y: H / 2 + 100,
-      hp: 100, maxHp: 100,
-      speed: 230,
-      dmg: 35,
-      atkDur: 4 / 12,       // attack animation length; upgrades shorten it
+      hp: BASE_MAX_HP, maxHp: BASE_MAX_HP,
+      speed: BASE_SPEED,
+      dmg: BASE_DMG,
+      atkDur: BASE_ATK_DUR, // attack animation length; upgrades shorten it
       flip: false,
       state: 'idle',        // idle | run | attack
       animT: 0,
@@ -853,6 +901,7 @@
     state.mode = 'playing';
     setTouchAdventureButtons(false);
     leaveIsles();
+    setBgmTrack('survival');
     updateCamera(0, true);
     runStartedAt = Date.now();
     track('run_start', { mode: 'survival' });
@@ -1039,6 +1088,7 @@
     state.mode = 'playing';
     setTouchAdventureButtons(true);
     joinIsles();
+    setBgmTrack('adventure');
     updateCamera(0, true);
     runStartedAt = Date.now();
     // events.mode only allows survival/campaign; log the run without one until the DB migrates
@@ -1053,6 +1103,7 @@
     state.score = 0;
     setTouchAdventureButtons(false);
     leaveIsles();
+    setBgmTrack('default');
     loadAct(0);
     runStartedAt = Date.now();
     track('run_start', { mode: 'campaign' });
@@ -2637,26 +2688,61 @@
     { id: 'feast',  name: 'Feast',         desc: 'Heal to full' },
   ];
 
+  // Every stat upgrade used to compound with no ceiling — a long Survival
+  // run stacking Swift Boots made movement so fast it got HARDER to play
+  // (overshooting dodges, no fine control), and stacked Quick Swing pushed
+  // attack duration toward zero. Caps keep each stat meaningful for a
+  // handful of picks, then flatten out instead of spiraling.
+  const UPGRADE_CAPS = {
+    speed: BASE_SPEED * 1.6,     // fast, but still controllable
+    atkDur: BASE_ATK_DUR * 0.4,  // 2.5x attack speed ceiling
+    dmg: 125,
+    hp: 250,
+  };
+
+  function isUpgradeMaxed(id) {
+    if (id === 'dmg') return player.dmg >= UPGRADE_CAPS.dmg;
+    if (id === 'hp') return player.maxHp >= UPGRADE_CAPS.hp;
+    if (id === 'speed') return player.speed >= UPGRADE_CAPS.speed;
+    if (id === 'atkspd') return player.atkDur <= UPGRADE_CAPS.atkDur;
+    return false; // feast has nothing to max out
+  }
+
   function offerUpgrades() {
-    const pool = [...UPGRADES].sort(() => Math.random() - 0.5).slice(0, 3);
+    // Skip maxed-out picks so a long run doesn't keep offering dead
+    // choices; only pad them back in if too few live ones remain (applyUpgrade
+    // clamps, so an already-maxed pick offered as a last resort is a
+    // harmless no-op, not a broken button).
+    const live = UPGRADES.filter(u => !isUpgradeMaxed(u.id)).sort(() => Math.random() - 0.5);
+    const capped = UPGRADES.filter(u => isUpgradeMaxed(u.id)).sort(() => Math.random() - 0.5);
+    const pool = [...live, ...capped].slice(0, 3);
     state.mode = 'upgrade';
     document.getElementById('upgrade-stats').innerHTML =
       playerStatsText().map(([k, v]) => `${k} ${v}`).join('  &middot;  ');
     pool.forEach((up, i) => {
+      const maxed = isUpgradeMaxed(up.id);
       const btn = document.getElementById(`up-${i}`);
-      btn.querySelector('.up-name').textContent = up.name;
-      btn.querySelector('.up-desc').textContent = up.desc;
+      btn.querySelector('.up-name').textContent = up.name + (maxed ? ' (MAX)' : '');
+      btn.querySelector('.up-desc').textContent = maxed ? 'Already maxed' : up.desc;
       btn.dataset.upgradeId = up.id;
     });
     document.getElementById('upgrade-screen').classList.remove('hidden');
   }
 
   function applyUpgrade(id) {
-    if (id === 'dmg') player.dmg += 10;
-    else if (id === 'hp') { player.maxHp += 25; player.hp += 25; }
-    else if (id === 'speed') player.speed *= 1.12;
-    else if (id === 'atkspd') player.atkDur *= 0.8;
-    else if (id === 'feast') player.hp = player.maxHp;
+    if (id === 'dmg') {
+      player.dmg = Math.min(player.dmg + 10, UPGRADE_CAPS.dmg);
+    } else if (id === 'hp') {
+      const newMax = Math.min(player.maxHp + 25, UPGRADE_CAPS.hp);
+      player.hp += newMax - player.maxHp; // grant only the actual delta
+      player.maxHp = newMax;
+    } else if (id === 'speed') {
+      player.speed = Math.min(player.speed * 1.12, UPGRADE_CAPS.speed);
+    } else if (id === 'atkspd') {
+      player.atkDur = Math.max(player.atkDur * 0.8, UPGRADE_CAPS.atkDur);
+    } else if (id === 'feast') {
+      player.hp = player.maxHp;
+    }
     sfx.pick();
     attackQueued = false;
     document.getElementById('upgrade-screen').classList.add('hidden');
@@ -3934,6 +4020,9 @@
       syncCloud: syncCloudSave,
       pushCloud: pushCloudSave,
       presence: () => ({ joined: !!islesChannel, ghosts: ghosts.size }),
+      applyUpgrade,       // console testing of the Survival upgrade caps
+      isUpgradeMaxed,
+      upgradeCaps: UPGRADE_CAPS,
     };
     Object.defineProperty(window.__ts, 'ghosts', { get: () => ghosts });
     Object.defineProperty(window.__ts, 'player', { get: () => player });
@@ -3944,6 +4033,7 @@
     Object.defineProperty(window.__ts, 'npcs', { get: () => npcList });
     Object.defineProperty(window.__ts, 'cam', { get: () => cam });
     Object.defineProperty(window.__ts, 'bgm', { get: () => bgm });
+    Object.defineProperty(window.__ts, 'bgmTrack', { get: () => bgmTrack });
   }
 
   // ---------- Boot ----------
