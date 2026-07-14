@@ -1,7 +1,7 @@
-// Fable Kingdom — EVM wallet auth (Robinhood Chain)
+// HoodHaven — EVM wallet auth (Robinhood Chain)
 // Verifies an EIP-191 personal_sign signature, then mints a Supabase session
 // JWT directly. The user is stored with a synthetic email of
-// "<0xwallet>@wallet.fablekingdom.app" so they slot into Supabase auth + RLS
+// "<0xwallet>@wallet.hoodhaven.app" so they slot into Supabase auth + RLS
 // exactly like an email user. Replaces solana-auth after the move to
 // Robinhood Chain (Arbitrum Orbit L2) — signature recovery is chain-agnostic,
 // so no RPC call is ever needed here.
@@ -139,7 +139,7 @@ serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
     const walletLc = wallet.toLowerCase();
-    const email = `${walletLc}@wallet.fablekingdom.app`;
+    const email = `${walletLc}@wallet.hoodhaven.app`;
     const cleanName = (displayName || "").trim().slice(0, 16);
     const defaultName = `${walletLc.slice(0, 6)}…${walletLc.slice(-4)}`;
 

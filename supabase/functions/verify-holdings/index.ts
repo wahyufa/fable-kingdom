@@ -1,4 +1,4 @@
-// Fable Kingdom — Knight's Crest holdings check
+// HoodHaven — Knight's Crest holdings check
 // Reads the signed-in wallet's $FADOM balance on Robinhood Chain and stamps
 // `crest: true/false` into the user's metadata. The crest then shows on the
 // start screen, unlocks the GILDED skin, and is copied onto every leaderboard

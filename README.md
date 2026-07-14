@@ -1,7 +1,7 @@
-# Fable Kingdom
+# HoodHaven
 
 > A story-driven pixel action game playable in your browser.
-> Live at **https://fable-kingdom.pages.dev**
+> Live at **https://fable-kingdom.pages.dev** (domain rename pending)
 
 Built on the Tiny Swords free asset pack by Pixel Frog. Vanilla HTML/CSS/JS — no build step, no framework.
 

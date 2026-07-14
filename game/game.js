@@ -3399,7 +3399,7 @@
       const accounts = await provider.request({ method: 'eth_requestAccounts' });
       const wallet = String(accounts[0]).toLowerCase();
       await ensureRobinhoodChain(provider);
-      const message = `Sign in to Fable Kingdom\nWallet: ${wallet}\nIssued at: ${new Date().toISOString()}`;
+      const message = `Sign in to HoodHaven\nWallet: ${wallet}\nIssued at: ${new Date().toISOString()}`;
 
       authStatus('SIGN THE MESSAGE TO VERIFY', true);
       // personal_sign returns a 65-byte 0x-hex signature

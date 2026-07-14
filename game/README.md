@@ -1,4 +1,4 @@
-# Fable Kingdom — The Stolen Banner
+# HoodHaven — The Stolen Banner
 
 A story-driven pixel action game built with the [Tiny Swords](https://pixelfrog-assets.itch.io/tiny-swords) free asset pack (v1 + v2) by Pixel Frog. Vanilla HTML/CSS/JS — no build step, no dependencies.
 

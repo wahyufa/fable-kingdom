@@ -71,7 +71,7 @@ Finish a run and SUBMIT SCORE works without any further prompts.
 
 1. Client builds a message:
    ```
-   Sign in to Fable Kingdom
+   Sign in to HoodHaven
    Wallet: <0x address, lowercase>
    Issued at: <ISO timestamp>
    ```
@@ -81,7 +81,7 @@ Finish a run and SUBMIT SCORE works without any further prompts.
    with secp256k1 ecrecover (@noble/curves — no RPC call needed), checks it
    matches the claimed wallet, checks the message contains the wallet address
    and a fresh timestamp (±5 min), upserts a Supabase user with synthetic
-   email `<0xwallet>@wallet.fablekingdom.app` and metadata
+   email `<0xwallet>@wallet.hoodhaven.app` and metadata
    `{ wallet_address, display_name }`, and returns a signed access token (1 h).
 4. Client stores the token. PostgREST honors it via RLS so the existing
    "authenticated insert own" policy on `scores` works unchanged.

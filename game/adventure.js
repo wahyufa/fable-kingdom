@@ -1,5 +1,5 @@
 /*
- * Fable Kingdom — Adventure mode data.
+ * HoodHaven — Adventure mode data.
  * Tuning for the peaceful open-world gathering mode lives here, away from the
  * engine (same data/engine split as campaign.js). Node kinds reference decor
  * kinds in game.js (tree / goldstone) plus the roaming sheep.

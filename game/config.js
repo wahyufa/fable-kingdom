@@ -1,5 +1,5 @@
 /*
- * Fable Kingdom — runtime config.
+ * HoodHaven — runtime config.
  * Fill in your Supabase project credentials to enable the online leaderboard.
  * Leave both empty and the game runs fully offline (leaderboard UI hidden).
  *
