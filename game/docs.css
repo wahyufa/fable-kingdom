@@ -8,9 +8,10 @@
   --text: #1f2328;
   --text-soft: #57606a;
   --border: #e7e2d9;
-  --brand: #8a5a3b;          /* warm wood-brown links/accents */
-  --brand-soft: rgba(243, 179, 64, 0.14);
-  --gold: #b07818;
+  --brand: #CCFF00;          /* warm wood-brown links/accents */
+  --brand-soft: #F9FFE3;
+  --gold: #CCFF00;
+  --robin: #667C0F;
   --font-pixel: 'Press Start 2P', 'Courier New', monospace;
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
@@ -29,7 +30,7 @@ body {
   line-height: 1.75;
 }
 
-a { color: var(--brand); text-decoration: none; }
+a { color: var(--robin); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* ---------- Sidebar ---------- */
@@ -89,8 +90,8 @@ a:hover { text-decoration: underline; }
 }
 
 .side-nav a.active {
-  background: var(--brand-soft);
-  color: var(--brand);
+  background: var(--brand);
+  color: var(--text);
   font-weight: 600;
 }
 
@@ -135,7 +136,7 @@ a:hover { text-decoration: underline; }
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--robin);
   margin-bottom: 10px;
 }
 
@@ -222,7 +223,7 @@ th {
   font-size: 14.5px;
 }
 
-.hint.warn { border-left-color: #d29922; background: #fff8ec; }
+.hint.warn { border-left-color: #CCFF00; background: #F9FFE3; }
 
 .hint-icon { flex: none; font-size: 16px; line-height: 1.6; }
 

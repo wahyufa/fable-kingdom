@@ -856,3 +856,46 @@ canvas { touch-action: none; }
   border-radius: 10px;
   touch-action: none;
 }
+
+/* ---------- Responsive (overlays/panels) ----------
+   None of the overlay panels were ever width-constrained to the viewport —
+   several set a fixed min-width (the ledger's two-column layout assumed
+   720-980px) that just runs off the edge of a phone screen with no way to
+   scroll to the rest. Touch controls shipped mobile-capable; this is the
+   matching pass for the HTML overlay panels on top of the canvas. */
+@media (max-width: 700px) {
+  .overlay {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 22px 12px;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 18px;
+  }
+
+  .panel h1 { font-size: 22px; margin-bottom: 16px; }
+  .panel .subtitle { font-size: 10px; }
+
+  /* Ledger: side-by-side columns don't fit — stack them */
+  .ledger-panel,
+  .ledger-panel-wide { min-width: 0; }
+  .ledger-cols { flex-direction: column; gap: 20px; margin: 20px 0 16px; }
+  .ledger-col { width: 100%; }
+
+  /* Upgrade picker + build menu (shares .upgrade-btn) */
+  .upgrade-row { flex-wrap: wrap; gap: 12px; }
+  .upgrade-btn { min-width: 0; flex: 1 1 130px; }
+
+  /* Gate confirm, Marla's shop, leaderboard, name entry */
+  .gate-panel { max-width: 100%; }
+  .shop-rows { min-width: 0; }
+  .lb-list { min-width: 0; }
+  .btn-stack-item { min-width: 0; }
+  .submit-row { flex-wrap: wrap; }
+  .auth-form input,
+  #player-name { width: 100%; max-width: 280px; }
+}
